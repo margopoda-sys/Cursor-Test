@@ -1,1 +1,1099 @@
-<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Autonomous IT Readiness Assessment</title>\n    <style>\n        body { font-family: Arial, sans-serif; margin: 20px; }\n        .quiz-container { max-width: 600px; margin: auto; }\n        .question { margin: 20px 0; }\n        .submit-btn { margin-top: 20px; padding: 10px 15px; }\n    </style>\n</head>\n<body>\n    <div class="quiz-container">\n        <h1>Autonomous IT Readiness Assessment</h1>\n        <form id="quiz-form">\n            <div class="question">\n                <label for="q1">1. Does your organization use automation tools?</label>\n                <select id="q1" name="q1">\n                    <option value="yes">Yes</option>\n                    <option value="no">No</option>\n                </select>\n            </div>\n            <div class="question">\n                <label for="q2">2. How often do you review your IT processes?</label>\n                <select id="q2" name="q2">\n                    <option value="frequently">Frequently</option>\n                    <option value="occasionally">Occasionally</option>\n                    <option value="rarely">Rarely</option>\n                </select>\n            </div>\n            <div class="question">\n                <label for="q3">3. Is your team trained in automation methodologies?</label>\n                <select id="q3" name="q3">\n                    <option value="yes">Yes</option>\n                    <option value="no">No</option>\n                </select>\n            </div>\n            <button type="submit" class="submit-btn">Submit</button>\n        </form>\n    </div>\n    <script>\n        document.getElementById('quiz-form').onsubmit = function(e) {\n            e.preventDefault();\n            alert('Thank you for completing the assessment!');\n        };\n    </script>\n</body>\n</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous IT Readiness Assessment</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #070a12;
+            --panel: #101828;
+            --panel-soft: #152238;
+            --text: #e7edf7;
+            --muted: #95a4be;
+            --line: #26354f;
+            --brand: #63e6be;
+            --brand-2: #30c8ff;
+            --warn: #ffbd6f;
+            --danger: #ff8f8f;
+            --radius: 14px;
+            --shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at 15% 10%, #1a2842 0%, #070a12 40%);
+            padding: 20px;
+        }
+
+        .app {
+            width: min(1040px, 100%);
+            margin: 0 auto;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .app-shell {
+            position: relative;
+            min-height: 760px;
+        }
+
+        .screen {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transform: translateX(14px) scale(0.995);
+            pointer-events: none;
+            transition: opacity 280ms ease, transform 280ms ease;
+            overflow-y: auto;
+            padding: 40px clamp(18px, 4vw, 52px) 52px;
+        }
+
+        .screen.active {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(48, 200, 255, 0.12);
+            border: 1px solid rgba(48, 200, 255, 0.28);
+            color: #bfefff;
+            font-size: 12px;
+            letter-spacing: 0.02em;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: clamp(1.9rem, 2.6vw, 2.9rem);
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+
+        h2 {
+            font-size: clamp(1.35rem, 2.2vw, 2rem);
+            margin-bottom: 8px;
+        }
+
+        .subhead {
+            color: var(--muted);
+            max-width: 840px;
+            line-height: 1.7;
+            margin-bottom: 18px;
+        }
+
+        .promise {
+            font-size: clamp(1.2rem, 2vw, 1.7rem);
+            color: var(--brand);
+            margin: 18px 0 16px;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .stack {
+            display: grid;
+            gap: 14px;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            background: linear-gradient(180deg, rgba(21, 34, 56, 0.6), rgba(21, 34, 56, 0.45));
+            border-radius: var(--radius);
+            padding: 18px;
+        }
+
+        .panel h3 {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #b8c8e6;
+            margin-bottom: 10px;
+        }
+
+        .list {
+            margin-left: 18px;
+            color: #c3cee1;
+            line-height: 1.7;
+        }
+
+        .list li { margin: 6px 0; }
+
+        .maturity-grid {
+            display: grid;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .maturity-item {
+            border: 1px solid var(--line);
+            border-left: 4px solid var(--brand);
+            background: rgba(16, 24, 40, 0.84);
+            border-radius: 10px;
+            padding: 13px;
+            color: #d8e2f4;
+            line-height: 1.55;
+        }
+
+        .progress-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            border-radius: 999px;
+            background: #1b2942;
+            border: 1px solid #2a3e62;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--brand), var(--brand-2));
+            transition: width 220ms ease;
+        }
+
+        .dimension-label {
+            display: inline-block;
+            color: #bdebd4;
+            background: rgba(99, 230, 190, 0.12);
+            border: 1px solid rgba(99, 230, 190, 0.32);
+            border-radius: 999px;
+            padding: 6px 11px;
+            font-size: 0.8rem;
+            margin-bottom: 14px;
+        }
+
+        .anchors {
+            display: grid;
+            gap: 10px;
+            margin: 18px 0;
+        }
+
+        .anchor {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px 14px;
+            background: rgba(13, 20, 35, 0.8);
+        }
+
+        .anchor strong {
+            color: var(--brand);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        .anchor p {
+            color: #c3cee1;
+            line-height: 1.55;
+            font-size: 0.95rem;
+        }
+
+        .score-row {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .score-btn {
+            border: 1px solid #38527d;
+            background: #10203a;
+            color: #eaf1fc;
+            border-radius: 10px;
+            padding: 11px 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+        }
+
+        .score-btn:hover {
+            transform: translateY(-1px);
+            border-color: var(--brand-2);
+        }
+
+        .score-btn.active {
+            background: linear-gradient(180deg, #63e6be, #30c8ff);
+            color: #031225;
+            border-color: transparent;
+        }
+
+        .hint {
+            color: var(--muted);
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .nav {
+            margin-top: 28px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .btn {
+            border: 1px solid transparent;
+            border-radius: 10px;
+            padding: 11px 16px;
+            cursor: pointer;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            transition: transform 140ms ease, opacity 140ms ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #63e6be, #30c8ff);
+            color: #031225;
+        }
+
+        .btn-secondary {
+            background: #12203a;
+            color: #d8e5fb;
+            border-color: #375076;
+        }
+
+        .btn-danger {
+            background: #331927;
+            color: #ffc8d2;
+            border-color: #713045;
+        }
+
+        .gate-form {
+            display: grid;
+            gap: 14px;
+            margin-top: 14px;
+            max-width: 700px;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #d8e5fb;
+            font-size: 0.92rem;
+        }
+
+        .field input {
+            width: 100%;
+            border: 1px solid #38527d;
+            background: #0f1d35;
+            color: var(--text);
+            border-radius: 10px;
+            padding: 10px 12px;
+            outline: none;
+        }
+
+        .field input:focus {
+            border-color: var(--brand-2);
+            box-shadow: 0 0 0 3px rgba(48, 200, 255, 0.15);
+        }
+
+        .checkbox {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            font-size: 0.92rem;
+            color: #c3cee1;
+            line-height: 1.6;
+        }
+
+        .checkbox input {
+            margin-top: 3px;
+            transform: scale(1.12);
+        }
+
+        .error {
+            color: #ffd4d4;
+            background: rgba(255, 143, 143, 0.12);
+            border: 1px solid rgba(255, 143, 143, 0.36);
+            padding: 9px 11px;
+            border-radius: 9px;
+            font-size: 0.9rem;
+        }
+
+        .results-header {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin: 16px 0 20px;
+        }
+
+        .stat {
+            border: 1px solid var(--line);
+            background: rgba(14, 23, 38, 0.85);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+
+        .stat-title {
+            color: #b8c8e6;
+            text-transform: uppercase;
+            font-size: 0.76rem;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.42rem;
+            font-weight: 800;
+        }
+
+        .stat-note {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .chart-wrap {
+            height: 290px;
+        }
+
+        .blockers {
+            display: grid;
+            gap: 9px;
+        }
+
+        .blocker {
+            border: 1px solid #4b3b24;
+            background: rgba(77, 58, 29, 0.16);
+            border-left: 4px solid var(--warn);
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        .blocker small {
+            color: #f7d19b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .plan {
+            margin-top: 16px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .milestone {
+            border: 1px solid var(--line);
+            border-left: 4px solid var(--brand);
+            border-radius: 12px;
+            background: rgba(16, 24, 40, 0.84);
+            padding: 12px 14px;
+        }
+
+        .milestone h4 {
+            color: var(--brand);
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .milestone p {
+            color: #c8d3e9;
+            line-height: 1.55;
+            font-size: 0.95rem;
+        }
+
+        .confirmation {
+            margin-top: 12px;
+            border: 1px dashed #3f5f8c;
+            background: rgba(48, 200, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px;
+            color: #d4e8ff;
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+
+        .mini-kv {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 5px 12px;
+        }
+
+        .cta {
+            margin-top: 18px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 980px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .results-header {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            body { padding: 12px; }
+            .screen { padding: 28px 16px 30px; }
+            .score-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .field-grid { grid-template-columns: 1fr; }
+            .app-shell { min-height: 860px; }
+            .cta { justify-content: stretch; }
+            .cta .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <main class="app">
+        <div class="app-shell">
+            <section class="screen active" id="screen-intro">
+                <div class="badge">Autonomous IT Readiness Assessment</div>
+                <h1>Your Roadmap to Autonomous IT</h1>
+                <p class="promise">In 10 minutes, score your autonomy maturity and get a 90-day plan to move up one level—safely.</p>
+                <p class="subhead">
+                    This interactive assessment scores your IT organization across five dimensions that determine autonomy readiness:
+                    Signal Quality, Context & Investigation, Execution Capability, Governance & Safety, and Operationalization.
+                    You will get your current maturity level, top blockers, and a tailored 30/60/90-day delivery plan.
+                </p>
+                <div class="stack">
+                    <div class="panel">
+                        <h3>What you'll walk away with</h3>
+                        <ul class="list">
+                            <li>Your current autonomy maturity level (0–5)</li>
+                            <li>Your top three gaps blocking the next level</li>
+                            <li>A prioritized 90-day plan with 30/60/90-day deliverables</li>
+                            <li>A practical next step: one-level progression with measurable outcomes</li>
+                        </ul>
+                    </div>
+                    <div class="panel">
+                        <h3>Definition: Autonomous IT</h3>
+                        <p class="subhead">
+                            Autonomous IT is an operating model where systems act on defined intent and policy—detecting signals, reasoning about impact, and executing approved actions across infrastructure, applications, and services.
+                        </p>
+                    </div>
+                </div>
+                <div class="nav">
+                    <button class="btn btn-secondary" type="button" data-go="screen-model">View Maturity Model</button>
+                    <button class="btn btn-primary" type="button" data-go="screen-q1">Start Assessment</button>
+                </div>
+            </section>
+
+            <section class="screen" id="screen-model">
+                <div class="badge">Reference Screen</div>
+                <h2>The Autonomous IT Maturity Model</h2>
+                <p class="subhead">Definitions included verbatim.</p>
+                <div class="maturity-grid">
+                    <div class="maturity-item">Level 0 — Chatbot: The system answers questions. Humans make every decision.</div>
+                    <div class="maturity-item">Level 1 — Assistant: The system recommends. Humans approve and execute.</div>
+                    <div class="maturity-item">Level 2 — Agents: The system acts with human sign-off at every step.</div>
+                    <div class="maturity-item">Level 3 — Advanced Agents: The system executes bounded actions automatically within defined guardrails.</div>
+                    <div class="maturity-item">Level 4 — Expert Agents: The system handles multi-step workflows end-to-end; humans shift to policy and exception review.</div>
+                    <div class="maturity-item">Level 5 — Agent Ecosystems: Agents coordinate with other agents across domains with minimal human intervention.</div>
+                </div>
+                <div class="panel" style="margin-top: 14px;">
+                    <h3>Score interpretation (total out of 25)</h3>
+                    <ul class="list">
+                        <li>0–7 → Level 0–1: Foundation work needed before autonomy is viable</li>
+                        <li>8–13 → Level 2: Early agency in place—execution capability is the next unlock</li>
+                        <li>14–18 → Level 3: Bounded autonomy running—governance and scope are the next frontier</li>
+                        <li>19–22 → Level 4: High autonomy—focus shifts to cross-domain coordination</li>
+                        <li>23–25 → Level 5: Full autonomy—agent ecosystems operating at scale</li>
+                    </ul>
+                </div>
+                <div class="nav">
+                    <button class="btn btn-secondary" type="button" data-go="screen-intro">Back</button>
+                    <button class="btn btn-primary" type="button" data-go="screen-q1">Start Assessment</button>
+                </div>
+            </section>
+
+            <section class="screen" id="screen-q1">
+                <div class="progress-wrap">
+                    <span>1 of 5</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 20%;"></div></div>
+                </div>
+                <div class="dimension-label">Dimension 1: Signal Quality</div>
+                <h2>Can you suppress, deduplicate, enrich, and correlate alerts reliably?</h2>
+                <p class="subhead">The foundation of autonomous IT is a signal worth acting on.</p>
+                <div class="anchors">
+                    <div class="anchor"><strong>0–1</strong><p>High alert volume, manual triage dominant, no consistent suppression or correlation</p></div>
+                    <div class="anchor"><strong>2–3</strong><p>Consistent correlation in place, meaningful incidents being created, deduplicated to reduce noise</p></div>
+                    <div class="anchor"><strong>4–5</strong><p>Correlation actively drives automated decisions—signals trigger action, not just awareness</p></div>
+                </div>
+                <div class="score-row" data-dimension="signal"></div>
+                <p class="hint">Select one score from 0 to 5.</p>
+                <div class="nav">
+                    <button class="btn btn-secondary" type="button" data-go="screen-model">Back</button>
+                    <button class="btn btn-primary" type="button" data-next="screen-q2" data-require="signal">Next</button>
+                </div>
+            </section>
+
+            <section class="screen" id="screen-q2">
+                <div class="progress-wrap">
+                    <span>2 of 5</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 40%;"></div></div>
+                </div>
+                <div class="dimension-label">Dimension 2: Context & Investigation</div>
+                <h2>Can the system explain what's happening and what to do next without a human assembling the picture?</h2>
+                <p class="subhead">Mature context links symptoms to services, likely causes, blast radius, and recommended actions.</p>
+                <div class="anchors">
+                    <div class="anchor"><strong>0–1</strong><p>Investigation is fully manual, engineers correlate across tools by hand</p></div>
+                    <div class="anchor"><strong>2–3</strong><p>Some summarization or categorization exists, but prioritization and RCA still require human judgment</p></div>
+                    <div class="anchor"><strong>4–5</strong><p>The system produces summaries, RCA, impact mapping, similar incidents, and recommended next actions automatically</p></div>
+                </div>
+                <div class="score-row" data-dimension="context"></div>
+                <p class="hint">Select one score from 0 to 5.</p>
+                <div class="nav">
+                    <button class="btn btn-secondary" type="button" data-go="screen-q1">Back</button>
+                    <button class="btn btn-primary" type="button" data-next="screen-q3" data-require="context">Next</button>
+                </div>
+            </section>
+
+            <section class="screen" id="screen-q3">
+                <div class="progress-wrap">
+                    <span>3 of 5</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 60%;"></div></div>
+                </div>
+                <div class="dimension-label">Dimension 3: Execution Capability</div>
+                <h2>Can the system take action across tools and verify the outcome?</h2>
+                <p class="subhead">Recommendations without execution are not full autonomy.</p>
+                <div class="anchors">
+                    <div class="anchor"><strong>0–1</strong><p>No execution capability, or ad hoc scripts with no governance</p></div>
+                    <div class="anchor"><strong>2</strong><p>Executes with human approval at each step</p></div>
+                    <div class="anchor"><strong>3</strong><p>Bounded auto-execution for defined, low-risk action classes</p></div>
+                    <div class="anchor"><strong>4–5</strong><p>Playbook discovery, generation, and execution at scale across ITSM and automation tooling</p></div>
+                </div>
+                <div class="score-row" data-dimension="execution"></div>
+                <p class="hint">Select one score from 0 to 5.</p>
+                <div class="nav">
+                    <button class="btn btn-secondary" type="button" data-go="screen-q2">Back</button>
+                    <button class="btn btn-primary" type="button" data-next="screen-q4" data-require="execution">Next</button>
+                </div>
+            </section>
+
+            <section class="screen" id="screen-q4">
+                <div class="progress-wrap">
+                    <span>4 of 5</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 80%;"></div></div>
+                </div>
+                <div class="dimension-label">Dimension 4: Governance & Safety</div>
+                <h2>Do you have the controls in place to let the system act and to know what it did?</h2>
+                <p class="subhead">Governance is what makes autonomy possible, trusted, and scalable.</p>
+                <div class="anchors">
+                    <div class="anchor"><strong>0–1</strong><p>No consistent controls—actions are ad hoc, ungoverned, or undocumented</p></div>
+                    <div class="anchor"><strong>2</strong><p>Approvals exist but aren't standardized across workflows or teams</p></div>
+                    <div class="anchor"><strong>3</strong><p>Policy-based automation in place for defined safe-to-run action classes</p></div>
+                    <div class="anchor"><strong>4–5</strong><p>Mature controls—RBAC, audit logs, confidence scoring, execution previews—support broad autonomy</p></div>
+                </div>
+                <div class="score-row" data-dimension="governance"></div>
+                <p class="hint">Select one score from 0 to 5.</p>
+                <div class="nav">
+                    <button class="btn btn-secondary" type="button" data-go="screen-q3">Back</button>
+                    <button class="btn btn-primary" type="button" data-next="screen-q5" data-require="governance">Next</button>
+                </div>
+            </section>
+
+            <section class="screen" id="screen-q5">
+                <div class="progress-wrap">
+                    <span>5 of 5</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
+                </div>
+                <div class="dimension-label">Dimension 5: Operationalization</div>
+                <h2>Is agentic work embedded in your live incident workflow or still in pilots?</h2>
+                <p class="subhead">Production usage and tracked outcomes determine real readiness.</p>
+                <div class="anchors">
+                    <div class="anchor"><strong>0–1</strong><p>Agentic work exists in pilots or demos, not in production incident workflows</p></div>
+                    <div class="anchor"><strong>2–3</strong><p>Agents are involved in parts of the workflow but not end-to-end; some metrics tracked inconsistently</p></div>
+                    <div class="anchor"><strong>4–5</strong><p>Agents are embedded across the full incident lifecycle; noise reduction, MTTR, and manual effort are tracked regularly</p></div>
+                </div>
+                <div class="score-row" data-dimension="operationalization"></div>
+                <p class="hint">Select one score from 0 to 5.</p>
+                <div class="nav">
+                    <button class="btn btn-secondary" type="button" data-go="screen-q4">Back</button>
+                    <button class="btn btn-primary" type="button" data-next="screen-gate" data-require="operationalization">Continue</button>
+                </div>
+            </section>
+
+            <section class="screen" id="screen-gate">
+                <div class="badge">Required Gated Step</div>
+                <h2>Unlock your results and personalized 90-day plan</h2>
+                <p class="subhead">Complete this form before results are revealed. Form payload is logged to console and shown back to you for confirmation.</p>
+                <form id="lead-form" class="gate-form" novalidate>
+                    <div class="field-grid">
+                        <div class="field">
+                            <label for="name">Name *</label>
+                            <input id="name" name="name" type="text" required>
+                        </div>
+                        <div class="field">
+                            <label for="workEmail">Work Email *</label>
+                            <input id="workEmail" name="workEmail" type="email" required>
+                        </div>
+                        <div class="field">
+                            <label for="company">Company *</label>
+                            <input id="company" name="company" type="text" required>
+                        </div>
+                        <div class="field">
+                            <label for="jobTitle">Job Title *</label>
+                            <input id="jobTitle" name="jobTitle" type="text" required>
+                        </div>
+                        <div class="field">
+                            <label for="sfdcCampaign">SFDC Campaign ID (optional)</label>
+                            <input id="sfdcCampaign" name="sfdcCampaign" type="text">
+                        </div>
+                        <div class="field">
+                            <label for="marketoProgram">Marketo Program ID (optional)</label>
+                            <input id="marketoProgram" name="marketoProgram" type="text">
+                        </div>
+                    </div>
+                    <label class="checkbox">
+                        <input id="consent" name="consent" type="checkbox" required>
+                        <span>I consent to Edwin AI contacting me about this assessment and related autonomous IT solutions. *</span>
+                    </label>
+                    <p id="gate-error" class="error" hidden></p>
+                    <div class="nav">
+                        <button class="btn btn-secondary" type="button" data-go="screen-q5">Back</button>
+                        <button class="btn btn-primary" type="submit">View Results</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="screen" id="screen-results">
+                <div class="badge">Assessment Output</div>
+                <h2>Your autonomy maturity result</h2>
+                <p class="subhead">Current maturity, target level, blockers, recommended path, and full 30/60/90-day plan.</p>
+
+                <div class="results-header">
+                    <article class="stat">
+                        <div class="stat-title">Current maturity</div>
+                        <div class="stat-value" id="current-level">-</div>
+                        <div class="stat-note" id="current-message">-</div>
+                    </article>
+                    <article class="stat">
+                        <div class="stat-title">Target level (next)</div>
+                        <div class="stat-value" id="target-level">-</div>
+                        <div class="stat-note">Move up one level safely in 90 days.</div>
+                    </article>
+                    <article class="stat">
+                        <div class="stat-title">Total score</div>
+                        <div class="stat-value"><span id="total-score">0</span>/25</div>
+                        <div class="stat-note">Composite score from five dimensions.</div>
+                    </article>
+                </div>
+
+                <div class="results-grid">
+                    <article class="panel">
+                        <h3>Score breakdown by dimension</h3>
+                        <div class="chart-wrap"><canvas id="score-chart" aria-label="Dimension score chart"></canvas></div>
+                    </article>
+                    <article class="panel">
+                        <h3>Top 3 blockers</h3>
+                        <div class="blockers" id="blockers"></div>
+                    </article>
+                </div>
+
+                <article class="panel" style="margin-top: 16px;">
+                    <h3>Recommended path</h3>
+                    <h2 id="path-title" style="font-size: 1.25rem; margin-bottom: 8px;"></h2>
+                    <p class="subhead" id="path-frame"></p>
+                    <p class="subhead" id="path-work" style="margin-bottom: 0;"></p>
+                </article>
+
+                <article class="panel" style="margin-top: 16px;">
+                    <h3>Your 30/60/90-day deliverables</h3>
+                    <div class="plan" id="plan"></div>
+                </article>
+
+                <article class="confirmation" id="lead-confirmation"></article>
+
+                <div class="nav">
+                    <button class="btn btn-secondary" type="button" id="start-over">Start Over</button>
+                    <div class="cta">
+                        <button class="btn btn-primary" type="button" id="request-demo">Request an Edwin AI demo →</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const dimensions = [
+            { key: "signal", name: "Signal Quality" },
+            { key: "context", name: "Context & Investigation" },
+            { key: "execution", name: "Execution Capability" },
+            { key: "governance", name: "Governance & Safety" },
+            { key: "operationalization", name: "Operationalization" }
+        ];
+
+        const state = {
+            scores: {
+                signal: null,
+                context: null,
+                execution: null,
+                governance: null,
+                operationalization: null
+            },
+            lead: null,
+            chart: null
+        };
+
+        function fillScoreRows() {
+            document.querySelectorAll(".score-row").forEach((row) => {
+                const dimension = row.getAttribute("data-dimension");
+                row.innerHTML = "";
+                for (let i = 0; i <= 5; i += 1) {
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "score-btn";
+                    btn.textContent = i;
+                    btn.setAttribute("data-score", String(i));
+                    btn.addEventListener("click", () => setScore(dimension, i, row));
+                    row.appendChild(btn);
+                }
+            });
+        }
+
+        function setScore(dimension, score, row) {
+            state.scores[dimension] = score;
+            row.querySelectorAll(".score-btn").forEach((btn) => {
+                btn.classList.toggle("active", Number(btn.getAttribute("data-score")) === score);
+            });
+        }
+
+        function navigateTo(screenId) {
+            document.querySelectorAll(".screen").forEach((screen) => {
+                screen.classList.toggle("active", screen.id === screenId);
+            });
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function attachNavigation() {
+            document.querySelectorAll("[data-go]").forEach((btn) => {
+                btn.addEventListener("click", () => navigateTo(btn.getAttribute("data-go")));
+            });
+
+            document.querySelectorAll("[data-next]").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const dim = btn.getAttribute("data-require");
+                    if (state.scores[dim] === null) {
+                        alert("Please choose a score before continuing.");
+                        return;
+                    }
+                    navigateTo(btn.getAttribute("data-next"));
+                });
+            });
+        }
+
+        function calculateTotal() {
+            return Object.values(state.scores).reduce((sum, val) => sum + (Number.isFinite(val) ? val : 0), 0);
+        }
+
+        function getMaturity(total) {
+            if (total <= 7) {
+                return {
+                    currentLabel: "Level 0–1",
+                    currentMessage: "Foundation work needed before autonomy is viable",
+                    currentNumeric: 1
+                };
+            }
+            if (total <= 13) {
+                return {
+                    currentLabel: "Level 2",
+                    currentMessage: "Early agency in place—execution capability is the next unlock",
+                    currentNumeric: 2
+                };
+            }
+            if (total <= 18) {
+                return {
+                    currentLabel: "Level 3",
+                    currentMessage: "Bounded autonomy running—governance and scope are the next frontier",
+                    currentNumeric: 3
+                };
+            }
+            if (total <= 22) {
+                return {
+                    currentLabel: "Level 4",
+                    currentMessage: "High autonomy—focus shifts to cross-domain coordination",
+                    currentNumeric: 4
+                };
+            }
+            return {
+                currentLabel: "Level 5",
+                currentMessage: "Full autonomy—agent ecosystems operating at scale",
+                currentNumeric: 5
+            };
+        }
+
+        function getTopBlockers() {
+            return dimensions
+                .map((d) => ({ ...d, score: state.scores[d.key] }))
+                .sort((a, b) => a.score - b.score || a.name.localeCompare(b.name))
+                .slice(0, 3);
+        }
+
+        function choosePath(blockers) {
+            const minScore = Math.min(...dimensions.map((d) => state.scores[d.key]));
+            const lowestKeys = dimensions.filter((d) => state.scores[d.key] === minScore).map((d) => d.key);
+
+            const selectMappedPath = (keys) => {
+                if (keys.includes("signal")) return "A";
+                if (keys.includes("context")) return "B";
+                if (keys.includes("execution") || keys.includes("governance")) return "C";
+                return null;
+            };
+
+            let pathCode = selectMappedPath(lowestKeys);
+            if (!pathCode) {
+                pathCode = selectMappedPath(blockers.map((b) => b.key)) || "C";
+            }
+
+            if (pathCode === "A") {
+                return {
+                    code: "Path A: Fix the Signal",
+                    frame: "Everything downstream depends on signal quality.",
+                    work: "Improve suppression, deduplication, alert enrichment, and correlation rules."
+                };
+            }
+            if (pathCode === "B") {
+                return {
+                    code: "Path B: Build Agentic Investigation",
+                    frame: "Signals are solid but picture assembly is still manual.",
+                    work: "Connect signals to services, surface blast radius, generate summaries, and produce prioritized recommended actions."
+                };
+            }
+            return {
+                code: "Path C: Launch Bounded Self-Healing",
+                frame: "Context exists but execution trust is the gap.",
+                work: "Identify safe repeatable action classes, then wrap execution in approval workflows and audit trails."
+            };
+        }
+
+        function buildPlanMarkup() {
+            const milestones = [
+                {
+                    title: "Day 30: Governance baseline + high-confidence use cases",
+                    text: "Define permitted actions, approval workflows, and rollback rules."
+                },
+                {
+                    title: "Day 60: Consistent correlation → agent recommendations + approvals in production workflows",
+                    text: "Operationalize recommendation quality and human-in-the-loop approvals in live workflows."
+                },
+                {
+                    title: "Day 90: Bounded auto-execution for one incident type, end-to-end, with tracked outcomes",
+                    text: "Track and report noise reduction, MTTR, and manual effort with defensible baseline-vs-outcome evidence."
+                }
+            ];
+
+            return milestones
+                .map(
+                    (m) => `
+                        <div class="milestone">
+                            <h4>${m.title}</h4>
+                            <p>${m.text}</p>
+                        </div>
+                    `
+                )
+                .join("");
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById("score-chart");
+            if (state.chart) state.chart.destroy();
+            state.chart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: dimensions.map((d) => d.name),
+                    datasets: [{
+                        label: "Score (0-5)",
+                        data: dimensions.map((d) => state.scores[d.key]),
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        backgroundColor: ["#63e6be", "#6cdcf4", "#8bbfff", "#9eafff", "#c79fff"],
+                        borderColor: "#0c1322"
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: "#d9e6fa" }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1,
+                                color: "#b8c8e6"
+                            },
+                            grid: { color: "rgba(184, 200, 230, 0.15)" }
+                        },
+                        x: {
+                            ticks: { color: "#d9e6fa" },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderResults() {
+            const total = calculateTotal();
+            const maturity = getMaturity(total);
+            const blockers = getTopBlockers();
+            const path = choosePath(blockers);
+            const target = Math.min(5, maturity.currentNumeric + 1);
+
+            document.getElementById("current-level").textContent = maturity.currentLabel;
+            document.getElementById("current-message").textContent = maturity.currentMessage;
+            document.getElementById("target-level").textContent = `Level ${target}`;
+            document.getElementById("total-score").textContent = String(total);
+
+            document.getElementById("blockers").innerHTML = blockers
+                .map(
+                    (b, idx) => `
+                        <div class="blocker">
+                            <small>Blocker ${idx + 1} · Score ${b.score}/5</small>
+                            <div>${b.name}</div>
+                        </div>
+                    `
+                )
+                .join("");
+
+            document.getElementById("path-title").textContent = path.code;
+            document.getElementById("path-frame").textContent = `Frame: ${path.frame}`;
+            document.getElementById("path-work").textContent = `Work: ${path.work}`;
+            document.getElementById("plan").innerHTML = buildPlanMarkup();
+
+            const lead = state.lead || {};
+            document.getElementById("lead-confirmation").innerHTML = `
+                <strong>Lead capture confirmation</strong><br>
+                Form submitted successfully. This payload was logged to the console and can be wired to your backend endpoint.
+                <div class="mini-kv" style="margin-top: 8px;">
+                    <span>Name</span><span>${lead.name || "-"}</span>
+                    <span>Work Email</span><span>${lead.workEmail || "-"}</span>
+                    <span>Company</span><span>${lead.company || "-"}</span>
+                    <span>Job Title</span><span>${lead.jobTitle || "-"}</span>
+                </div>
+            `;
+
+            renderChart();
+        }
+
+        function validateLeadForm(data) {
+            if (!data.name || !data.workEmail || !data.company || !data.jobTitle) {
+                return "Please complete Name, Work Email, Company, and Job Title.";
+            }
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(data.workEmail)) {
+                return "Please enter a valid work email address.";
+            }
+            if (!data.consent) {
+                return "Consent is required before results can be shown.";
+            }
+            return "";
+        }
+
+        function attachLeadForm() {
+            const form = document.getElementById("lead-form");
+            const errorBox = document.getElementById("gate-error");
+            form.addEventListener("submit", (event) => {
+                event.preventDefault();
+                const payload = {
+                    name: form.name.value.trim(),
+                    workEmail: form.workEmail.value.trim(),
+                    company: form.company.value.trim(),
+                    jobTitle: form.jobTitle.value.trim(),
+                    sfdcCampaign: form.sfdcCampaign.value.trim(),
+                    marketoProgram: form.marketoProgram.value.trim(),
+                    consent: form.consent.checked
+                };
+
+                const error = validateLeadForm(payload);
+                if (error) {
+                    errorBox.hidden = false;
+                    errorBox.textContent = error;
+                    return;
+                }
+
+                errorBox.hidden = true;
+                state.lead = payload;
+
+                console.log("Autonomous IT assessment lead payload:", payload);
+                console.log("Autonomous IT assessment scores:", state.scores);
+
+                renderResults();
+                navigateTo("screen-results");
+            });
+        }
+
+        function attachResultActions() {
+            document.getElementById("request-demo").addEventListener("click", () => {
+                const leadName = state.lead?.name || "your team";
+                alert(`Thanks, ${leadName}. "Request an Edwin AI demo →" has been captured. Connect this button to your CRM/demo booking flow.`);
+            });
+
+            document.getElementById("start-over").addEventListener("click", () => {
+                state.scores = {
+                    signal: null,
+                    context: null,
+                    execution: null,
+                    governance: null,
+                    operationalization: null
+                };
+                state.lead = null;
+                document.getElementById("lead-form").reset();
+                document.querySelectorAll(".score-btn").forEach((b) => b.classList.remove("active"));
+                if (state.chart) {
+                    state.chart.destroy();
+                    state.chart = null;
+                }
+                navigateTo("screen-intro");
+            });
+        }
+
+        fillScoreRows();
+        attachNavigation();
+        attachLeadForm();
+        attachResultActions();
+    </script>
+</body>
+</html>
