@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous IT Readiness Assessment</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #0f3460;
+            --text: #eaeaea;
+            --text-muted: #a0a0a0;
+            --success: #00d4aa;
+            --warning: #ffa500;
+            --error: #ff6b6b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--secondary);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 0;
+            overflow: hidden;
+            min-height: 600px;
+        }
+
+        .page {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            min-height: 600px;
+            padding: 60px 40px;
+        }
+
+        .page.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .header {
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: var(--success);
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: var(--text);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .description {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+            overflow: hidden;
+            flex: 1;
+            margin: 0 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            transition: width 0.3s ease;
+        }
+
+        .landing-content {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .promise {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--success);
+            margin: 30px 0;
+            line-height: 1.4;
+        }
+
+        .benefits-list {
+            text-align: left;
+            background: rgba(15, 52, 96, 0.5);
+            border-left: 3px solid var(--success);
+            padding: 20px;
+            border-radius: 6px;
+            margin: 30px 0;
+        }
+
+        .benefits-list li {
+            list-style: none;
+            padding: 8px 0;
+            color: var(--text-muted);
+        }
+
+        .benefits-list li:before {
+            content: "✓ ";
+            color: var(--success);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .dimension-name {
+            color: var(--success);
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .anchors {
+            background: rgba(15, 52, 96, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .anchor {
+            margin: 15px 0;
+            padding: 10px;
+            border-left: 3px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .anchor-score {
+            color: var(--success);
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .anchor-text {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .score-buttons {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin: 30px 0;
+        }
+
+        .score-btn {
+            padding: 15px;
+            border: 2px solid var(--accent);
+            background: transparent;
+            color: var(--text);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .score-btn:hover {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .score-btn.active {
+            background: var(--success);
+            color: var(--primary);
+            border-color: var(--success);
+        }
+
+        .form-group {
+            margin: 20px 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        input[type="text"]::placeholder,
+        input[type="email"]::placeholder {
+            color: var(--text-muted);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            margin: 20px 0;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .result-card {
+            background: rgba(15, 52, 96, 0.5);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .result-card h3 {
+            color: var(--success);
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-card .value {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 30px 0;
+        }
+
+        .blockers-list {
+            background: rgba(15, 52, 96, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .blocker-item {
+            padding: 12px;
+            margin: 10px 0;
+            background: var(--accent);
+            border-left: 3px solid var(--warning);
+            border-radius: 4px;
+        }
+
+        .blocker-rank {
+            color: var(--warning);
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .blocker-name {
+            color: var(--text);
+            margin-top: 5px;
+        }
+
+        .plan-section {
+            background: rgba(15, 52, 96, 0.5);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .plan-phase {
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--accent);
+            border-radius: 6px;
+            border-left: 4px solid var(--success);
+        }
+
+        .phase-title {
+            color: var(--success);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .phase-content {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            justify-content: space-between;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: var(--success);
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: #00c49a;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--accent);
+            color: var(--text);
+            border: 1px solid var(--text-muted);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(15, 52, 96, 0.8);
+            border-color: var(--success);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .maturity-model {
+            margin: 30px 0;
+        }
+
+        .model-item {
+            background: rgba(15, 52, 96, 0.3);
+            border-left: 3px solid var(--success);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .model-level {
+            color: var(--success);
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .model-description {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .page {
+                padding: 40px 20px;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .score-buttons {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            .promise {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Page 1: Landing -->
+        <div class="page active" id="landing">
+            <div class="landing-content">
+                <div class="header" style="border: none; padding: 0;">
+                    <h1>Autonomous IT Readiness Assessment</h1>
+                </div>
+                <p class="promise">In 10 minutes, score your autonomy maturity and get a 90-day plan to move up one level—safely.</p>
+                <p class="description">The gap between experimenting with AI and operationalizing autonomy is wider than most IT leaders expect. This assessment gives you a structured way to determine exactly where your IT organization sits on the autonomy maturity spectrum—and what it will take to move up one level safely.</p>
+                <div class="benefits-list">
+                    <ul>
+                        <li>Your current autonomy maturity level (0–5)</li>
+                        <li>Your top three gaps blocking the next level</li>
+                        <li>A prioritized 90-day plan with 30/60/90-day deliverables</li>
+                        <li>A POV readiness checklist to validate your plan against real incident data</li>
+                    </ul>
+                </div>
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToPage('maturity')">Learn the Model</button>
+                    <button class="btn-primary" onclick="goToPage('dimension1')" style="background: var(--accent); color: var(--text);">Start Assessment →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Maturity Model -->
+        <div class="page" id="maturity">
+            <div class="header">
+                <h2>Autonomous IT Maturity Model</h2>
+                <p class="subtitle">Who decides and who acts. Not how many scripts you have or how mature your monitoring is.</p>
+            </div>
+            <div class="maturity-model">
+                <div class="model-item">
+                    <div class="model-level">Level 0 — Chatbot</div>
+                    <div class="model-description">The system answers questions. Humans make every decision and take every action.</div>
+                </div>
+                <div class="model-item">
+                    <div class="model-level">Level 1 — Assistant</div>
+                    <div class="model-description">The system recommends. Humans approve and execute. Decisions follow predefined logic with no exceptions.</div>
+                </div>
+                <div class="model-item">
+                    <div class="model-level">Level 2 — Agents</div>
+                    <div class="model-description">The system acts—but only with human sign-off. Conditional execution with approval gates at every step.</div>
+                </div>
+                <div class="model-item">
+                    <div class="model-level">Level 3 — Advanced Agents</div>
+                    <div class="model-description">The system executes bounded actions automatically. Humans define the guardrails; the system operates inside them.</div>
+                </div>
+                <div class="model-item">
+                    <div class="model-level">Level 4 — Expert Agents</div>
+                    <div class="model-description">The system handles specialized, multi-step workflows end-to-end. Human oversight shifts from execution to policy and exception review.</div>
+                </div>
+                <div class="model-item">
+                    <div class="model-level">Level 5 — Agent Ecosystems</div>
+                    <div class="model-description">Agents coordinate with other agents. The system orchestrates across domains with minimal human intervention.</div>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-secondary" onclick="goToPage('landing')">← Back</button>
+                <button class="btn-primary" onclick="goToPage('dimension1')">Start Assessment →</button>
+            </div>
+        </div>
+
+        <!-- Page 2: Dimension 1 - Signal Quality -->
+        <div class="page" id="dimension1">
+            <div class="progress-indicator">
+                <span>Question 1 of 5</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 20%;"></div>
+                </div>
+            </div>
+            <div class="header">
+                <h2>Signal Quality</h2>
+                <p class="subtitle">Can you suppress, deduplicate, enrich, and correlate alerts reliably?</p>
+            </div>
+            <p class="description">The foundation of autonomous IT is a signal worth acting on. If your system is still generating noise that requires a human to sort through before anything meaningful happens, autonomy hasn't started yet.</p>
+            <div class="anchors">
+                <div class="anchor">
+                    <div class="anchor-score">0–1</div>
+                    <div class="anchor-text">High alert volume, manual triage dominant, no consistent suppression or correlation</div>
+                </div>
+                <div class="anchor">
+                    <div class="anchor-score">2–3</div>
+                    <div class="anchor-text">Consistent correlation in place, meaningful incidents being created, deduplicated to reduce noise</div>
+                </div>
+                <div class="anchor">
+                    <div class="anchor-score">4–5</div>
+                    <div class="anchor-text">Correlation actively drives automated decisions—signals trigger action, not just awareness</div>
+                </div>
+            </div>
+            <p style="color: var(--text-muted); margin: 20px 0; text-align: center;">Select your score:</p>
+            <div class="score-buttons" id="dimension1-scores">
+                <button class="score-btn" onclick="setScore('dimension1', 0)">0</button>
+                <button class="score-btn" onclick="setScore('dimension1', 1)">1</button>
+                <button class="score-btn" onclick="setScore('dimension1', 2)">2</button>
+                <button class="score-btn" onclick="setScore('dimension1', 3)">3</button>
+                <button class="score-btn" onclick="setScore('dimension1', 4)">4</button>
+                <button class="score-btn" onclick="setScore('dimension1', 5)">5</button>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-secondary" onclick="goToPage('landing')">← Back</button>
+                <button class="btn-primary" onclick="validateAndNext('dimension1', 'dimension2')" id="next-dimension1">Next →</button>
+            </div>
+        </div>
+
+        <!-- Page 3: Dimension 2 - Context & Investigation -->
+        <div class="page" id="dimension2">
+            <div class="progress-indicator">
+                <span>Question 2 of 5</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 40%;"></div>
+                </div>
+            </div>
+            <div class="header">
+                <h2>Context & Investigation</h2>
+                <p class="subtitle">Can the system explain what's happening and what to do next without a human assembling the picture?</p>
+            </div>
+            <p class="description">This is where most organizations stall. Data exists, but it lives in disconnected tools. A mature context layer links symptoms to services, surfaces likely causes, shows blast radius, and surfaces similar past incidents—so the system arrives at an investigation conclusion, not just a dashboard.</p>
+            <div class="anchors">
+                <div class="anchor">
+                    <div class="anchor-score">0–1</div>
+                    <div class="anchor-text">Investigation is fully manual, engineers correlate across tools by hand</div>
+                </div>
+                <div class="anchor">
+                    <div class="anchor-score">2–3</div>
+                    <div class="anchor-text">Some summarization or categorization exists, but prioritization and RCA still require human judgment</div>
+                </div>
+                <div class="anchor">
+                    <div class="anchor-score">4–5</div>
+                    <div class="anchor-text">The system produces summaries, RCA, impact mapping, similar incidents, and recommended next actions automatically</div>
+                </div>
+            </div>
+            <p style="color: var(--text-muted); margin: 20px 0; text-align: center;">Select your score:</p>
+            <div class="score-buttons" id="dimension2-scores">
+                <button class="score-btn" onclick="setScore('dimension2', 0)">0</button>
+                <button class="score-btn" onclick="setScore('dimension2', 1)">1</button>
+                <button class="score-btn" onclick="setScore('dimension2', 2)">2</button>
+                <button class="score-btn" onclick="setScore('dimension2', 3)">3</button>
+                <button class="score-btn" onclick="setScore('dimension2', 4)">4</button>
+                <button class="score-btn" onclick="setScore('dimension2', 5)">5</button>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-secondary" onclick="goToPage('dimension1')">← Back</button>
+                <button class="btn-primary" onclick="validateAndNext('dimension2', 'dimension3')" id="next-dimension2">Next →</button>
+            </div>
+        </div>
+
+        <!-- Page 4: Dimension 3 - Execution Capability -->
+        <div class="page" id="dimension3">
+            <div class="progress-indicator">
+                <span>Question 3 of 5</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 60%;"></div>
+                </div>
+            </div>
+            <div class="header">
+                <h2>Execution Capability</h2>
+                <p class="subtitle">Can the system take action across tools and verify the outcome?</p>
+            </div>
+            <p class="description">Recommendations without execution aren't full autonomy. This dimension measures whether your system can move from insight to action by triggering runbooks, updating tickets, making changes, and confirming the result.</p>
+            <div class="anchors">
+                <div class="anchor">
+                    <div class="anchor-score">0–1</div>
+                    <div class="anchor-text">No execution capability, or ad hoc scripts with no governance</div>
+                </div>
+                <div class="anchor">
+                    <div class="anchor-score">2</div>
+                    <div class="anchor-text">Executes with human approval at each step</div>
+                </div>
+                <div class="anchor">
+                    <div class="anchor-score">3</div>
+                    <div class="anchor-text">Bounded auto-execution for defined, low-risk action classes</div>
+                </div>
+                <div class="anchor">
+                    <div class="anchor-score">4–5</div>
+                    <div class="anchor-text">Playbook discovery, generation, and execution at scale across ITSM and automation tooling</div>
+                </div>
+            </div>
+            <p style="color: var(--text-muted); margin: 20px 0; text-align: center;">Select your score:</p>
+            <div class="score-buttons" id="dimension3-scores">
+                <button class="score-btn" onclick="setScore('dimension3', 0)">0</button>
+                <button class="score-btn" onclick="setScore('dimension3', 1)">1</button>
+                <button class="score-btn" onclick="setScore('dimension3', 2)">2</button>
+                <button class="score-btn" onclick="setScore('dimension3', 3)">3</button>
+                <button class="score-btn" onclick="setScore('dimension3', 4)">4</button>
+                <button class="score-btn" onclick="setScore('dimension3', 5)">5</button>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-secondary" onclick="goToPage('dimension2')">← Back</button>
+                <button class="btn-primary" onclick="validateAndNext('dimension3', 'dimension4')" id="next-dimension3">Next →</button>
+            </div>
+        </div>
+
+        <!-- Page 5: Dimension 4 - Governance & Safety -->
+        <div class="page" id="dimension4">
+            <div class="progress-indicator">
+                <span>Question 4 of 5</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 80%;"></div>
+                </div>
+            </div>
+            <div class="header">
+                <h2>Governance & Safety</h2>
+                <p class="subtitle">Do you have the controls in place to let the system act and to know what it did?</p>
+            </div>
+            <p class="description">Governance isn't what slows autonomy down; it's what makes autonomy possible. Without consistent policy controls, audit trails, and approval workflows, your team won't trust the system enough to let it act—and they shouldn't. Execution previews and confidence scoring accelerate adoption by making the system's reasoning visible before it acts.</p>
+            <div class="anchors">
+                <div class="anchor">
+                    <div class="anchor-score">0–1</div>
+                    <div class="anchor-text">No consistent controls—actions are ad hoc, ungoverned, or undocumented</div>
+                </div>
+                <div class="anchor">
+                    <div class="anchor-score">2</div>
+                    <div class="anchor-text">Approvals exist but aren't standardized across workflows or teams</div>
+                </div>
+                <div class="anchor">
+                    <div class="anchor-score">3</div>
+                    <div class="anchor-text">Policy-based automation in place for defined safe-to-run action classes</div>
+                </div>
+                <div class="anchor">
+                    <div class="anchor-score">4–5</div>
+                    <div class="anchor-text">Mature controls—RBAC, audit logs, confidence scoring, execution previews—support broad autonomy</div>
+                </div>
+            </div>
+            <p style="color: var(--text-muted); margin: 20px 0; text-align: center;">Select your score:</p>
+            <div class="score-buttons" id="dimension4-scores">
+                <button class="score-btn" onclick="setScore('dimension4', 0)">0</button>
+                <button class="score-btn" onclick="setScore('dimension4', 1)">1</button>
+                <button class="score-btn" onclick="setScore('dimension4', 2)">2</button>
+                <button class="score-btn" onclick="setScore('dimension4', 3)">3</button>
+                <button class="score-btn" onclick="setScore('dimension4', 4)">4</button>
+                <button class="score-btn" onclick="setScore('dimension4', 5)">5</button>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-secondary" onclick="goToPage('dimension3')">← Back</button>
+                <button class="btn-primary" onclick="validateAndNext('dimension4', 'dimension5')" id="next-dimension4">Next →</button>
+            </div>
+        </div>
+
+        <!-- Page 6: Dimension 5 - Operationalization -->
+        <div class="page" id="dimension5">
+            <div class="progress-indicator">
+                <span>Question 5 of 5</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;"></div>
+                </div>
+            </div>
+            <div class="header">
+                <h2>Operationalization</h2>
+                <p class="subtitle">Is agentic work embedded in how your team actually operates or is it still a proof of concept?</p>
+            </div>
+            <p class="description">Agents running in a sandbox don't reduce your MTTR. This dimension measures whether agentic work is actually part of your live incident workflow and whether your team can prove it with numbers.</p>
+            <div class="anchors">
+                <div class="anchor">
+                    <div class="anchor-score">0–1</div>
+                    <div class="anchor-text">Agentic work exists in pilots or demos, not in production incident workflows</div>
+                </div>
+                <div class="anchor">
+                    <div class="anchor-score">2–3</div>
+                    <div class="anchor-text">Agents are involved in parts of the workflow but not end-to-end; some metrics tracked inconsistently</div>
+                </div>
+                <div class="anchor">
+                    <div class="anchor-score">4–5</div>
+                    <div class="anchor-text">Agents are embedded across the full incident lifecycle; noise reduction, MTTR, and manual effort are tracked regularly</div>
+                </div>
+            </div>
+            <p style="color: var(--text-muted); margin: 20px 0; text-align: center;">Select your score:</p>
+            <div class="score-buttons" id="dimension5-scores">
+                <button class="score-btn" onclick="setScore('dimension5', 0)">0</button>
+                <button class="score-btn" onclick="setScore('dimension5', 1)">1</button>
+                <button class="score-btn" onclick="setScore('dimension5', 2)">2</button>
+                <button class="score-btn" onclick="setScore('dimension5', 3)">3</button>
+                <button class="score-btn" onclick="setScore('dimension5', 4)">4</button>
+                <button class="score-btn" onclick="setScore('dimension5', 5)">5</button>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-secondary" onclick="goToPage('dimension4')">← Back</button>
+                <button class="btn-primary" onclick="validateAndNext('dimension5', 'gated')" id="next-dimension5">Continue →</button>
+            </div>
+        </div>
+
+        <!-- Page 7: Gated Form -->
+        <div class="page" id="gated">
+            <div class="header">
+                <h2>Before Your Results</h2>
+                <p class="subtitle">Please provide your information to unlock your personalized 90-day plan.</p>
+            </div>
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" id="fullName" placeholder="Your name" required>
+            </div>
+            <div class="form-group">
+                <label>Work Email *</label>
+                <input type="email" id="workEmail" placeholder="you@company.com" required>
+            </div>
+            <div class="form-group">
+                <label>Company *</label>
+                <input type="text" id="company" placeholder="Your company name" required>
+            </div>
+            <div class="form-group">
+                <label>Job Title *</label>
+                <input type="text" id="jobTitle" placeholder="Your role" required>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="consent">
+                <label class="checkbox-label">I agree to receive updates and insights about autonomous IT from Edwin AI.</label>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn-secondary" onclick="goToPage('dimension5')">← Back</button>
+                <button class="btn-primary" onclick="submitForm()">View My Results →</button>
+            </div>
+        </div>
+
+        <!-- Page 8: Results -->
+        <div class="page" id="results">
+            <div class="header">
+                <h2>Your Autonomy Readiness Results</h2>
+                <p class="subtitle">Based on your assessment responses</p>
+            </div>
+            <div class="results-grid">
+                <div class="result-card">
+                    <h3>Current Level</h3>
+                    <div class="value" id="currentLevel">-</div>
+                    <p style="color: var(--text-muted); font-size: 12px; margin-top: 5px;" id="currentLevelDesc">Foundation work needed</p>
+                </div>
+                <div class="result-card">
+                    <h3>Target Level</h3>
+                    <div class="value" id="targetLevel">-</div>
+                    <p style="color: var(--text-muted); font-size: 12px; margin-top: 5px;" id="targetLevelDesc">Next level</p>
+                </div>
+            </div>
+
+            <div style="margin: 30px 0;">
+                <h3 style="color: var(--success); margin-bottom: 20px;">Your Score Breakdown</h3>
+                <div class="chart-container">
+                    <canvas id="scoreChart"></canvas>
+                </div>
+            </div>
+
+            <div>
+                <h3 style="color: var(--warning); margin-bottom: 15px; font-size: 18px;">Top 3 Blockers</h3>
+                <div class="blockers-list" id="blockersList"></div>
+            </div>
+
+            <div>
+                <h3 style="color: var(--success); margin-bottom: 15px; font-size: 18px;">Your Path Forward</h3>
+                <div class="plan-section" id="pathSection"></div>
+            </div>
+
+            <div>
+                <h3 style="color: var(--success); margin-bottom: 15px; font-size: 18px;">Your 90-Day Plan</h3>
+                <div class="plan-section">
+                    <div class="plan-phase" id="day30"></div>
+                    <div class="plan-phase" id="day60"></div>
+                    <div class="plan-phase" id="day90"></div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn-secondary" onclick="goToPage('landing')">← Start Over</button>
+                <button class="btn-primary" onclick="requestDemo()">Request an Edwin AI Demo →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const assessmentData = {
+            scores: {
+                dimension1: null,
+                dimension2: null,
+                dimension3: null,
+                dimension4: null,
+                dimension5: null
+            },
+            userInfo: {
+                fullName: '',
+                workEmail: '',
+                company: '',
+                jobTitle: ''
+            }
+        };
+
+        const dimensionNames = {
+            dimension1: 'Signal Quality',
+            dimension2: 'Context & Investigation',
+            dimension3: 'Execution Capability',
+            dimension4: 'Governance & Safety',
+            dimension5: 'Operationalization'
+        };
+
+        function goToPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function setScore(dimension, score) {
+            assessmentData.scores[dimension] = score;
+            
+            // Update button states
+            const buttons = document.querySelectorAll(`#${dimension}-scores .score-btn`);
+            buttons.forEach((btn, index) => {
+                btn.classList.remove('active');
+                if (index === score) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function validateAndNext(dimension, nextPage) {
+            if (assessmentData.scores[dimension] === null) {
+                alert('Please select a score before continuing.');
+                return;
+            }
+            goToPage(nextPage);
+        }
+
+        function submitForm() {
+            const fullName = document.getElementById('fullName').value;
+            const workEmail = document.getElementById('workEmail').value;
+            const company = document.getElementById('company').value;
+            const jobTitle = document.getElementById('jobTitle').value;
+            const consent = document.getElementById('consent').checked;
+
+            if (!fullName || !workEmail || !company || !jobTitle) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            if (!consent) {
+                alert('Please accept the consent checkbox to continue.');
+                return;
+            }
+
+            assessmentData.userInfo = {
+                fullName,
+                workEmail,
+                company,
+                jobTitle,
+                consent
+            };
+
+            // Log to console
+            console.log('Assessment Data:', assessmentData);
+            console.log('User Info:', assessmentData.userInfo);
+
+            generateResults();
+            goToPage('results');
+        }
+
+        function calculateTotalScore() {
+            const scores = Object.values(assessmentData.scores);
+            return scores.reduce((sum, score) => sum + (score || 0), 0);
+        }
+
+        function getMaturityLevel(totalScore) {
+            if (totalScore <= 7) return 0;
+            if (totalScore <= 13) return 2;
+            if (totalScore <= 18) return 3;
+            if (totalScore <= 22) return 4;
+            return 5;
+        }
+
+        function getLevelDescription(level) {
+            const descriptions = {
+                0: 'Chatbot — Foundation work needed',
+                1: 'Assistant — Foundation work in progress',
+                2: 'Agents — Early agency in place',
+                3: 'Advanced Agents — Bounded autonomy running',
+                4: 'Expert Agents — High autonomy at scale',
+                5: 'Agent Ecosystems — Full autonomy'
+            };
+            return descriptions[level] || 'Unknown';
+        }
+
+        function getTopBlockers() {
+            const scores = {
+                'Signal Quality': assessmentData.scores.dimension1,
+                'Context & Investigation': assessmentData.scores.dimension2,
+                'Execution Capability': assessmentData.scores.dimension3,
+                'Governance & Safety': assessmentData.scores.dimension4,
+                'Operationalization': assessmentData.scores.dimension5
+            };
+
+            return Object.entries(scores)
+                .map(([name, score]) => ({ name, score }))
+                .sort((a, b) => a.score - b.score)
+                .slice(0, 3);
+        }
+
+        function determinePathAndPlan() {
+            const blockers = getTopBlockers();
+            const lowestBlocker = blockers[0].name;
+
+            let path, pathTitle, pathDescription, cta;
+
+            if (lowestBlocker === 'Signal Quality') {
+                path = 'A';
+                pathTitle = 'Path A: Fix the Signal';
+                pathDescription = 'Everything downstream depends on signal quality. If your alerts are noisy, your correlation is inconsistent, or your incidents aren\'t being created meaningfully, no amount of agentic capability will help—because the system has nothing reliable to act on. The work here is foundational: improve suppression and deduplication, enrich alerts with context, and build correlation rules that create fewer, better incidents.';
+                cta = 'Edwin AI Event Intelligence turns alert storms into actionable incidents.';
+            } else if (lowestBlocker === 'Context & Investigation') {
+                path = 'B';
+                pathTitle = 'Path B: Build Agentic Investigation';
+                pathDescription = 'Your signals are solid, but your team is still assembling the picture by hand—jumping between tools, correlating manually, writing their own summaries. The work here is connecting signals to services, surfacing impact and blast radius automatically, generating incident summaries, and producing prioritized recommended actions.';
+                cta = 'Edwin AI Agents deliver investigation-ready incidents.';
+            } else {
+                path = 'C';
+                pathTitle = 'Path C: Launch Bounded Self-Healing';
+                pathDescription = 'You have context. You have recommendations. Now the question is whether the system can act—and whether your team trusts it enough to let it. The work here is identifying your safest, most repeatable action classes, wrapping them in approval workflows and audit trails, and demonstrating consistent outcomes before removing the human gate.';
+                cta = 'Edwin AI Automation enables self-healing IT.';
+            }
+
+            const plan = {
+                day30: {
+                    title: 'Day 30: Governance Baseline + High-Confidence Use Cases',
+                    content: 'Define what actions are permitted, what requires approval, what must be logged, and what needs rollback. Identify 1–2 use cases where signal quality and context are strong enough to support autonomous recommendations with high confidence. Policy controls documented, approval workflows in place, use cases producing consistent recommendations.'
+                },
+                day60: {
+                    title: 'Day 60: Consistent Correlation → Agent Recommendations + Approvals',
+                    content: 'Correlation is running reliably. Incidents are being created with context already populated. Agent recommendations are appearing in your team\'s existing workflows—ITSM, chat, on-call tooling—and humans are approving and executing them. Alert noise measurably reduced, recommendations appearing consistently in production workflows, approval-gated execution running for at least one incident type.'
+                },
+                day90: {
+                    title: 'Day 90: Bounded Auto-Execution + Measured Outcomes',
+                    content: 'For your defined safe-to-run action class, the human approval gate comes down. The system executes, validates the outcome, and logs what it did and why. You have numbers: noise reduction, time-to-triage, MTTR, manual effort. At least one incident type resolving end-to-end without manual intervention, outcomes tracked and defensible.'
+                }
+            };
+
+            return { path, pathTitle, pathDescription, cta, plan };
+        }
+
+        function generateResults() {
+            const totalScore = calculateTotalScore();
+            const currentLevel = getMaturityLevel(totalScore);
+            const targetLevel = Math.min(currentLevel + 1, 5);
+            const blockers = getTopBlockers();
+            const pathData = determinePathAndPlan();
+
+            // Update score display
+            document.getElementById('currentLevel').textContent = currentLevel;
+            document.getElementById('currentLevelDesc').textContent = getLevelDescription(currentLevel);
+            document.getElementById('targetLevel').textContent = targetLevel;
+            document.getElementById('targetLevelDesc').textContent = getLevelDescription(targetLevel);
+
+            // Update blockers
+            const blockersList = document.getElementById('blockersList');
+            blockersList.innerHTML = blockers.map((blocker, index) => `
+                <div class="blocker-item">
+                    <div class="blocker-rank">#${index + 1} Blocker (Score: ${blocker.score}/5)</div>
+                    <div class="blocker-name">${blocker.name}</div>
+                </div>
+            `).join('');
+
+            // Update path
+            const pathSection = document.getElementById('pathSection');
+            pathSection.innerHTML = `
+                <h3 style="color: var(--success); margin-bottom: 15px;">${pathData.pathTitle}</h3>
+                <p style="color: var(--text-muted); line-height: 1.6; margin-bottom: 15px;">${pathData.pathDescription}</p>
+                <p style="color: var(--success); font-size: 13px; font-weight: 600;">${pathData.cta}</p>
+            `;
+
+            // Update 90-day plan
+            document.getElementById('day30').innerHTML = `
+                <div class="phase-title">${pathData.plan.day30.title}</div>
+                <div class="phase-content">${pathData.plan.day30.content}</div>
+            `;
+            document.getElementById('day60').innerHTML = `
+                <div class="phase-title">${pathData.plan.day60.title}</div>
+                <div class="phase-content">${pathData.plan.day60.content}</div>
+            `;
+            document.getElementById('day90').innerHTML = `
+                <div class="phase-title">${pathData.plan.day90.title}</div>
+                <div class="phase-content">${pathData.plan.day90.content}</div>
+            `;
+
+            // Create chart
+            createScoreChart();
+        }
+
+        function createScoreChart() {
+            const ctx = document.getElementById('scoreChart');
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
+
+            const labels = ['Signal Quality', 'Context & Investigation', 'Execution Capability', 'Governance & Safety', 'Operationalization'];
+            const data = [
+                assessmentData.scores.dimension1,
+                assessmentData.scores.dimension2,
+                assessmentData.scores.dimension3,
+                assessmentData.scores.dimension4,
+                assessmentData.scores.dimension5
+            ];
+
+            ctx.chart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Your Score',
+                        data: data,
+                        borderColor: '#00d4aa',
+                        backgroundColor: 'rgba(0, 212, 170, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#00d4aa',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scale: {
+                        beginAtZero: true,
+                        max: 5,
+                        ticks: {
+                            stepSize: 1,
+                            font: {
+                                size: 11,
+                                color: '#a0a0a0'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#eaeaea',
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function requestDemo() {
+            alert(`Demo request received for ${assessmentData.userInfo.fullName} (${assessmentData.userInfo.workEmail}). A sales representative will contact you shortly.`);
+        }
+
+        // Initialize
+        console.log('Autonomous IT Readiness Assessment loaded');
+    </script>
+</body>
+</html>
