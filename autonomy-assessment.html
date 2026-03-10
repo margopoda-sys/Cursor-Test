@@ -12,9 +12,9 @@
             --panel-soft: #152238;
             --text: #e7edf7;
             --muted: #95a4be;
-            --line: #26354f;
-            --brand: #63e6be;
-            --brand-2: #30c8ff;
+            --line: #2b446a;
+            --brand: #7ac943;
+            --brand-2: #00a3e0;
             --warn: #ffbd6f;
             --danger: #ff8f8f;
             --radius: 14px;
@@ -73,8 +73,8 @@
             gap: 8px;
             padding: 7px 12px;
             border-radius: 999px;
-            background: rgba(48, 200, 255, 0.12);
-            border: 1px solid rgba(48, 200, 255, 0.28);
+            background: rgba(0, 163, 224, 0.12);
+            border: 1px solid rgba(0, 163, 224, 0.28);
             color: #bfefff;
             font-size: 12px;
             letter-spacing: 0.02em;
@@ -178,8 +178,8 @@
         .dimension-label {
             display: inline-block;
             color: #bdebd4;
-            background: rgba(99, 230, 190, 0.12);
-            border: 1px solid rgba(99, 230, 190, 0.32);
+            background: rgba(122, 201, 67, 0.14);
+            border: 1px solid rgba(122, 201, 67, 0.35);
             border-radius: 999px;
             padding: 6px 11px;
             font-size: 0.8rem;
@@ -238,7 +238,7 @@
         }
 
         .score-btn.active {
-            background: linear-gradient(180deg, #63e6be, #30c8ff);
+            background: linear-gradient(180deg, var(--brand), var(--brand-2));
             color: #031225;
             border-color: transparent;
         }
@@ -262,6 +262,10 @@
             border-radius: 10px;
             padding: 11px 16px;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
             font-weight: 700;
             letter-spacing: 0.01em;
             transition: transform 140ms ease, opacity 140ms ease;
@@ -272,7 +276,7 @@
         }
 
         .btn-primary {
-            background: linear-gradient(90deg, #63e6be, #30c8ff);
+            background: linear-gradient(90deg, var(--brand), var(--brand-2));
             color: #031225;
         }
 
@@ -745,7 +749,7 @@
                 <div class="nav">
                     <button class="btn btn-secondary" type="button" id="start-over">Start Over</button>
                     <div class="cta">
-                        <button class="btn btn-primary" type="button" id="request-demo">Request an Edwin AI demo →</button>
+                        <a class="btn btn-primary" id="request-demo" href="https://www.logicmonitor.com/edwin-ai-demo" target="_blank" rel="noopener noreferrer">Request an Edwin AI demo →</a>
                     </div>
                 </div>
             </section>
@@ -944,7 +948,7 @@
                         data: dimensions.map((d) => state.scores[d.key]),
                         borderWidth: 1,
                         borderRadius: 8,
-                        backgroundColor: ["#63e6be", "#6cdcf4", "#8bbfff", "#9eafff", "#c79fff"],
+                        backgroundColor: ["#7ac943", "#00a3e0", "#53b96f", "#2ea3d4", "#8fcf66"],
                         borderColor: "#0c1322"
                     }]
                 },
@@ -1006,7 +1010,7 @@
             const lead = state.lead || {};
             document.getElementById("lead-confirmation").innerHTML = `
                 <strong>Lead capture confirmation</strong><br>
-                Form submitted successfully. This payload was logged to the console and can be wired to your backend endpoint.
+                Form submitted successfully. This payload was logged to the console and can be wired to your backend endpoint. A draft email was also triggered with the sentence: "hello world".
                 <div class="mini-kv" style="margin-top: 8px;">
                     <span>Name</span><span>${lead.name || "-"}</span>
                     <span>Work Email</span><span>${lead.workEmail || "-"}</span>
@@ -1032,19 +1036,26 @@
             return "";
         }
 
+        function sendHelloWorldEmail(recipient) {
+            const subject = encodeURIComponent("Autonomous IT Readiness Assessment");
+            const body = encodeURIComponent("hello world");
+            const mailto = `mailto:${recipient}?subject=${subject}&body=${body}`;
+            window.open(mailto, "_blank");
+        }
+
         function attachLeadForm() {
             const form = document.getElementById("lead-form");
             const errorBox = document.getElementById("gate-error");
             form.addEventListener("submit", (event) => {
                 event.preventDefault();
                 const payload = {
-                    name: form.name.value.trim(),
-                    workEmail: form.workEmail.value.trim(),
-                    company: form.company.value.trim(),
-                    jobTitle: form.jobTitle.value.trim(),
-                    sfdcCampaign: form.sfdcCampaign.value.trim(),
-                    marketoProgram: form.marketoProgram.value.trim(),
-                    consent: form.consent.checked
+                    name: form.elements["name"].value.trim(),
+                    workEmail: form.elements["workEmail"].value.trim(),
+                    company: form.elements["company"].value.trim(),
+                    jobTitle: form.elements["jobTitle"].value.trim(),
+                    sfdcCampaign: form.elements["sfdcCampaign"].value.trim(),
+                    marketoProgram: form.elements["marketoProgram"].value.trim(),
+                    consent: form.elements["consent"].checked
                 };
 
                 const error = validateLeadForm(payload);
@@ -1059,6 +1070,7 @@
 
                 console.log("Autonomous IT assessment lead payload:", payload);
                 console.log("Autonomous IT assessment scores:", state.scores);
+                sendHelloWorldEmail(payload.workEmail);
 
                 renderResults();
                 navigateTo("screen-results");
@@ -1066,11 +1078,6 @@
         }
 
         function attachResultActions() {
-            document.getElementById("request-demo").addEventListener("click", () => {
-                const leadName = state.lead?.name || "your team";
-                alert(`Thanks, ${leadName}. "Request an Edwin AI demo →" has been captured. Connect this button to your CRM/demo booking flow.`);
-            });
-
             document.getElementById("start-over").addEventListener("click", () => {
                 state.scores = {
                     signal: null,
