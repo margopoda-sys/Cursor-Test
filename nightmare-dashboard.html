@@ -1,0 +1,2301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚠ ACME CORP OPS CENTER — CRITICAL INCIDENT ACTIVE</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root{
+  --bg-root:#07070f;
+  --bg-panel:#0d0d18;
+  --bg-panel-hdr:#090913;
+  --bg-alt:#101020;
+  --border:#1a1a2e;
+  --border-hi:#252545;
+
+  --crit:#ff2233;
+  --crit-dim:rgba(255,34,51,0.55);
+  --crit-bg:rgba(255,34,51,0.07);
+  --crit-border:rgba(255,34,51,0.35);
+  --crit-glow:rgba(255,34,51,0.5);
+
+  --warn:#f59e0b;
+  --warn-bg:rgba(245,158,11,0.07);
+  --warn-border:rgba(245,158,11,0.35);
+
+  --deg:#f97316;
+  --deg-bg:rgba(249,115,22,0.07);
+
+  --ok:#22c55e;
+  --ok-bg:rgba(34,197,94,0.07);
+  --ok-border:rgba(34,197,94,0.3);
+
+  --info:#38bdf8;
+
+  --txt:#dde1ef;
+  --txt2:#8892aa;
+  --txt3:#4a5270;
+  --txt-crit:#ff4455;
+  --txt-warn:#fbbf24;
+  --txt-deg:#fb923c;
+  --txt-ok:#4ade80;
+
+  --font:'Consolas','SF Mono','Courier New',monospace;
+  --font-ui:-apple-system,'Segoe UI',sans-serif;
+}
+
+html{overflow-x:hidden;}
+
+body{
+  background:var(--bg-root);
+  color:var(--txt);
+  font-family:var(--font);
+  font-size:11.5px;
+  line-height:1.45;
+  min-height:100vh;
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes pulse-crit{
+  0%,100%{box-shadow:0 0 6px var(--crit),0 0 12px var(--crit-dim);}
+  50%{box-shadow:0 0 18px var(--crit),0 0 40px var(--crit-dim),0 0 60px rgba(255,34,51,0.2);}
+}
+@keyframes blink{0%,49%{opacity:1;}50%,100%{opacity:0;}}
+@keyframes blink-slow{0%,65%{opacity:1;}66%,100%{opacity:0.15;}}
+@keyframes glow-pulse{
+  0%,100%{text-shadow:0 0 6px var(--crit);}
+  50%{text-shadow:0 0 16px var(--crit),0 0 30px var(--crit-dim);}
+}
+@keyframes slide-in{from{transform:translateX(-6px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+@keyframes fade-row{from{background:rgba(255,34,51,0.18);}to{background:transparent;}}
+@keyframes hdr-pulse{
+  0%,100%{background:linear-gradient(90deg,#1a0008 0%,#2a0010 50%,#1a0008 100%);}
+  50%{background:linear-gradient(90deg,#250010 0%,#3d0018 50%,#250010 100%);}
+}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);};}
+@keyframes scanline{0%{top:0%;}100%{top:100%;}}
+
+/* ========== TOP HEADER ========== */
+.main-hdr{
+  background:linear-gradient(90deg,#1a0008,#2a0010,#1a0008);
+  animation:hdr-pulse 2s ease-in-out infinite;
+  border-bottom:2px solid var(--crit);
+  padding:0;
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+.hdr-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:7px 14px 5px;
+  gap:10px;
+}
+.hdr-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-shrink:0;
+}
+.brand-logo{
+  font-size:15px;
+  font-weight:700;
+  color:var(--txt);
+  letter-spacing:2px;
+  font-family:var(--font-ui);
+  text-transform:uppercase;
+  border:1px solid var(--border-hi);
+  padding:3px 8px;
+  background:rgba(255,255,255,0.04);
+}
+.brand-sep{color:var(--txt3);margin:0 4px;}
+.brand-sub{color:var(--txt2);font-size:10.5px;letter-spacing:1px;}
+
+.hdr-status{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+}
+.global-status{
+  font-size:18px;
+  font-weight:700;
+  color:var(--crit);
+  letter-spacing:3px;
+  animation:glow-pulse 1.2s ease-in-out infinite;
+  font-family:var(--font-ui);
+  text-transform:uppercase;
+}
+.global-status-icon{
+  display:inline-block;
+  animation:blink 0.8s step-end infinite;
+  margin-right:6px;
+}
+.incident-context{
+  font-size:10px;
+  color:var(--txt2);
+  letter-spacing:0.5px;
+}
+
+.hdr-right{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:4px;
+  flex-shrink:0;
+}
+.live-clock{
+  font-size:20px;
+  font-weight:700;
+  color:var(--txt);
+  letter-spacing:2px;
+}
+.live-date{font-size:10px;color:var(--txt3);}
+
+.hdr-bottom{
+  background:rgba(0,0,0,0.35);
+  border-top:1px solid rgba(255,34,51,0.2);
+  padding:5px 14px;
+  display:flex;
+  align-items:center;
+  gap:18px;
+  flex-wrap:wrap;
+}
+.hdr-stat{display:flex;align-items:center;gap:6px;font-size:10.5px;}
+.hdr-stat-label{color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;}
+.hdr-stat-val{font-weight:700;}
+.hdr-stat-val.c{color:var(--crit);animation:blink-slow 1.5s step-end infinite;}
+.hdr-stat-val.w{color:var(--warn);}
+.hdr-stat-val.ok{color:var(--ok);}
+
+.sla-breach{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:rgba(255,34,51,0.12);
+  border:1px solid var(--crit-border);
+  border-radius:3px;
+  padding:3px 10px;
+  animation:pulse-crit 1.5s ease-in-out infinite;
+}
+.sla-label{color:var(--txt-crit);font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+.sla-timer{color:var(--crit);font-size:14px;font-weight:700;letter-spacing:2px;}
+
+.freeze-badge{
+  background:rgba(245,158,11,0.15);
+  border:1px solid var(--warn-border);
+  color:var(--warn);
+  font-size:10px;
+  padding:3px 8px;
+  border-radius:2px;
+  font-weight:700;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+.violation-badge{
+  background:rgba(255,34,51,0.15);
+  border:1px solid var(--crit-border);
+  color:var(--crit);
+  font-size:10px;
+  padding:3px 8px;
+  border-radius:2px;
+  font-weight:700;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  animation:blink-slow 2s step-end infinite;
+}
+
+/* ========== LAYOUT ========== */
+.dashboard{
+  padding:6px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.row{
+  display:grid;
+  gap:6px;
+}
+.row-1{grid-template-columns:400px 1fr;}
+.row-2{grid-template-columns:repeat(4,1fr);}
+.row-3{grid-template-columns:2fr 220px 1fr;}
+.row-4{grid-template-columns:1fr 1.3fr 300px;}
+.row-5{grid-template-columns:1.2fr 1.2fr 1fr;}
+
+/* ========== PANELS ========== */
+.panel{
+  background:var(--bg-panel);
+  border:1px solid var(--border);
+  border-radius:3px;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.panel.crit-border{
+  border-color:var(--crit-border);
+}
+
+.panel-hdr{
+  background:var(--bg-panel-hdr);
+  border-bottom:1px solid var(--border);
+  padding:6px 10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-shrink:0;
+}
+.panel-title{
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  color:var(--txt2);
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+.panel-title .badge{font-size:9px;}
+.panel-meta{
+  font-size:10px;
+  color:var(--txt3);
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.panel-body{
+  flex:1;
+  overflow:hidden;
+  padding:0;
+}
+.panel-body.padded{padding:8px 10px;}
+
+/* ========== BADGES ========== */
+.badge{
+  display:inline-flex;
+  align-items:center;
+  padding:1px 6px;
+  border-radius:2px;
+  font-size:9.5px;
+  font-weight:700;
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+  gap:4px;
+}
+.badge-crit{
+  background:var(--crit-bg);
+  border:1px solid var(--crit-border);
+  color:var(--txt-crit);
+  animation:pulse-crit 2s ease-in-out infinite;
+}
+.badge-warn{background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--txt-warn);}
+.badge-deg{background:var(--deg-bg);border:1px solid rgba(249,115,22,0.35);color:var(--txt-deg);}
+.badge-ok{background:var(--ok-bg);border:1px solid var(--ok-border);color:var(--txt-ok);}
+.badge-info{background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.3);color:#7dd3fc;}
+.badge-maint{background:rgba(148,163,184,0.08);border:1px solid rgba(148,163,184,0.3);color:var(--txt2);}
+
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dot-crit{background:var(--crit);animation:pulse-crit 1.5s ease-in-out infinite;}
+.dot-warn{background:var(--warn);}
+.dot-deg{background:var(--deg);}
+.dot-ok{background:var(--ok);}
+
+/* ========== SERVICE HEALTH GRID ========== */
+.svc-list{
+  display:flex;
+  flex-direction:column;
+}
+.svc-row{
+  display:grid;
+  grid-template-columns:6px 1fr 90px 80px;
+  align-items:center;
+  gap:8px;
+  padding:5px 10px;
+  border-bottom:1px solid var(--border);
+  transition:background 0.2s;
+}
+.svc-row:hover{background:rgba(255,255,255,0.02);}
+.svc-row.crit-row{background:rgba(255,34,51,0.04);}
+.svc-name{font-size:11px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.svc-name span{color:var(--txt3);font-size:10px;}
+.svc-metric{font-size:10px;color:var(--txt2);text-align:right;font-variant-numeric:tabular-nums;}
+.svc-metric.crit{color:var(--txt-crit);}
+.svc-metric.warn{color:var(--txt-warn);}
+
+/* ========== INCIDENTS TABLE ========== */
+.inc-table{width:100%;border-collapse:collapse;}
+.inc-table th{
+  background:var(--bg-panel-hdr);
+  color:var(--txt3);
+  font-size:9.5px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  padding:5px 8px;
+  text-align:left;
+  border-bottom:1px solid var(--border);
+  font-weight:700;
+}
+.inc-table td{
+  padding:6px 8px;
+  border-bottom:1px solid var(--border);
+  font-size:11px;
+  vertical-align:middle;
+}
+.inc-table tr:hover td{background:rgba(255,255,255,0.02);}
+.inc-id{color:var(--info);font-weight:700;white-space:nowrap;}
+.inc-title{color:var(--txt);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.inc-dur{color:var(--txt2);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.inc-assign{color:var(--txt3);white-space:nowrap;}
+.inc-assign.unassigned{color:var(--txt-crit);animation:blink-slow 2s step-end infinite;}
+.p1{color:var(--crit);font-weight:700;}
+.p2{color:var(--warn);font-weight:700;}
+.p3{color:var(--txt-deg);font-weight:700;}
+
+/* ========== GRAPH PANELS ========== */
+.graph-wrap{
+  position:relative;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+.graph-big-val{
+  position:absolute;
+  top:8px;
+  left:10px;
+  z-index:2;
+}
+.graph-num{
+  font-size:22px;
+  font-weight:700;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.graph-num.crit{color:var(--crit);text-shadow:0 0 10px var(--crit-dim);}
+.graph-num.warn{color:var(--warn);}
+.graph-num.deg{color:var(--deg);}
+.graph-unit{font-size:11px;color:var(--txt3);margin-left:2px;}
+.graph-delta{
+  font-size:10px;
+  margin-top:2px;
+}
+.graph-delta.up{color:var(--crit);}
+.graph-delta.down{color:var(--ok);}
+.graph-canvas{
+  width:100%;
+  flex:1;
+  display:block;
+}
+.graph-footer{
+  padding:4px 10px;
+  background:var(--bg-panel-hdr);
+  border-top:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  font-size:9.5px;
+  color:var(--txt3);
+}
+
+/* ========== K8S POD TABLE ========== */
+.pod-scroll{
+  overflow-y:auto;
+  max-height:100%;
+}
+.pod-table{width:100%;border-collapse:collapse;}
+.pod-table th{
+  background:var(--bg-panel-hdr);
+  color:var(--txt3);
+  font-size:9.5px;
+  text-transform:uppercase;
+  letter-spacing:0.8px;
+  padding:5px 8px;
+  text-align:left;
+  border-bottom:1px solid var(--border);
+  font-weight:700;
+  position:sticky;
+  top:0;
+  z-index:5;
+}
+.pod-table td{
+  padding:4px 8px;
+  border-bottom:1px solid var(--border);
+  font-size:10.5px;
+  vertical-align:middle;
+  font-variant-numeric:tabular-nums;
+}
+.pod-table tr:hover td{background:rgba(255,255,255,0.025);}
+.pod-ns{color:var(--info);font-size:10px;}
+.pod-name{color:var(--txt);font-size:10px;font-family:var(--font);}
+.pod-name em{color:var(--txt3);}
+.pod-status{white-space:nowrap;}
+.ps-crash{color:var(--crit);}
+.ps-oom{color:var(--crit);}
+.ps-run{color:var(--ok);}
+.ps-err{color:var(--txt-crit);}
+.ps-term{color:var(--warn);}
+.ps-pend{color:var(--txt2);}
+.ps-init{color:var(--txt3);}
+.pod-restarts{color:var(--txt-crit);font-weight:700;}
+.pod-restarts.high{animation:blink-slow 1.8s step-end infinite;}
+.pod-res{color:var(--txt2);}
+.pod-res.warn{color:var(--warn);}
+.pod-res.crit{color:var(--crit);}
+
+/* ========== DB POOL GAUGE ========== */
+.db-pool-body{
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.pool-gauge-wrap{position:relative;}
+.pool-gauge-track{
+  height:20px;
+  background:rgba(255,255,255,0.06);
+  border-radius:2px;
+  overflow:hidden;
+  border:1px solid var(--border);
+}
+.pool-gauge-fill{
+  height:100%;
+  background:linear-gradient(90deg,#ff2233,#ff0000);
+  transition:width 0.8s ease;
+  box-shadow:0 0 8px var(--crit-dim);
+  animation:pulse-crit 2s ease-in-out infinite;
+}
+.pool-stat{display:flex;justify-content:space-between;font-size:10.5px;}
+.pool-stat-label{color:var(--txt3);}
+.pool-stat-val{color:var(--txt);font-variant-numeric:tabular-nums;}
+.pool-stat-val.crit{color:var(--crit);font-weight:700;}
+.pool-stat-val.warn{color:var(--warn);}
+.pool-big{
+  text-align:center;
+  padding:6px 0;
+}
+.pool-big-num{font-size:28px;font-weight:700;color:var(--crit);line-height:1;animation:glow-pulse 1.5s ease-in-out infinite;}
+.pool-big-label{font-size:9.5px;color:var(--txt3);letter-spacing:1px;text-transform:uppercase;}
+.pool-queue{
+  background:var(--crit-bg);
+  border:1px solid var(--crit-border);
+  border-radius:2px;
+  padding:6px 8px;
+  text-align:center;
+}
+.queue-num{font-size:18px;font-weight:700;color:var(--crit);}
+.queue-label{font-size:9.5px;color:var(--txt3);}
+
+/* ========== REPLICATION LAG ========== */
+.rep-list{padding:8px 10px;display:flex;flex-direction:column;gap:6px;}
+.rep-item{
+  background:var(--bg-alt);
+  border:1px solid var(--border);
+  border-radius:2px;
+  padding:7px 10px;
+}
+.rep-item.crit-bg{
+  background:var(--crit-bg);
+  border-color:var(--crit-border);
+}
+.rep-name{font-size:10.5px;color:var(--txt);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;}
+.rep-lag-bar-track{
+  height:6px;
+  background:rgba(255,255,255,0.06);
+  border-radius:1px;
+  overflow:hidden;
+  margin-bottom:3px;
+}
+.rep-lag-bar-fill{
+  height:100%;
+  border-radius:1px;
+  transition:width 0.8s;
+}
+.rep-lag-bar-fill.crit{background:var(--crit);animation:pulse-crit 2s ease-in-out infinite;}
+.rep-lag-bar-fill.warn{background:var(--warn);}
+.rep-stats{display:flex;justify-content:space-between;font-size:9.5px;color:var(--txt3);}
+.rep-stats .v{color:var(--txt-crit);font-weight:700;}
+
+/* ========== ALERT FEED ========== */
+.alert-scroll{
+  overflow-y:auto;
+  height:100%;
+}
+.alert-item{
+  display:grid;
+  grid-template-columns:3px 1fr;
+  border-bottom:1px solid var(--border);
+  animation:slide-in 0.3s ease;
+}
+.alert-stripe{width:3px;flex-shrink:0;}
+.alert-stripe.c{background:var(--crit);}
+.alert-stripe.w{background:var(--warn);}
+.alert-stripe.d{background:var(--deg);}
+.alert-content{padding:6px 8px;}
+.alert-top{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px;}
+.alert-svc{font-size:11px;font-weight:700;color:var(--txt);}
+.alert-time{font-size:9.5px;color:var(--txt3);white-space:nowrap;}
+.alert-msg{font-size:10.5px;color:var(--txt2);line-height:1.3;}
+.alert-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-top:3px;
+}
+.alert-ack{font-size:9.5px;}
+.alert-ack.unack{color:var(--crit);animation:blink-slow 2s step-end infinite;}
+.alert-ack.acked{color:var(--ok);}
+.alert-dur{font-size:9.5px;color:var(--txt3);}
+
+/* ========== LOG STREAM ========== */
+.log-scroll{
+  overflow-y:auto;
+  height:100%;
+  padding:4px 0;
+}
+.log-line{
+  padding:2px 10px;
+  font-size:10.5px;
+  line-height:1.4;
+  border-bottom:1px solid rgba(255,255,255,0.03);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  animation:slide-in 0.25s ease;
+}
+.log-line:hover{background:rgba(255,255,255,0.03);white-space:normal;word-break:break-all;}
+.log-ts{color:var(--txt3);margin-right:8px;}
+.log-level-fatal{color:var(--crit);font-weight:700;}
+.log-level-error{color:#ff6677;font-weight:700;}
+.log-level-warn{color:var(--warn);font-weight:700;}
+.log-level-info{color:var(--info);}
+.log-level-debug{color:var(--txt3);}
+.log-svc{color:#a78bfa;margin-right:6px;}
+.log-msg-fatal{color:var(--txt);}
+.log-msg-error{color:var(--txt2);}
+.log-msg-warn{color:var(--txt2);}
+.log-msg-info{color:var(--txt3);}
+
+/* ========== TOPOLOGY ========== */
+.topology-wrap{
+  position:relative;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+}
+.topo-svg{width:100%;height:100%;}
+
+/* ========== ON-CALL ========== */
+.oncall-list{
+  padding:8px;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.oncall-row{
+  display:grid;
+  grid-template-columns:70px 1fr auto auto;
+  align-items:center;
+  gap:8px;
+  padding:7px 10px;
+  background:var(--bg-alt);
+  border:1px solid var(--border);
+  border-radius:2px;
+}
+.oncall-row.unanswered{
+  background:var(--crit-bg);
+  border-color:var(--crit-border);
+}
+.oncall-row.escalating{
+  background:var(--warn-bg);
+  border-color:var(--warn-border);
+}
+.oncall-tier{font-size:9.5px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.8px;}
+.oncall-name{font-size:11.5px;font-weight:700;color:var(--txt);}
+.oncall-phone{font-size:9.5px;color:var(--txt3);}
+.oncall-status{
+  font-size:9.5px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+}
+.oncall-status.unans{color:var(--crit);animation:blink-slow 2s step-end infinite;}
+.oncall-status.esc{color:var(--warn);}
+.oncall-status.ans{color:var(--ok);}
+.oncall-pages{font-size:10.5px;color:var(--txt3);}
+.oncall-pages span{color:var(--txt-crit);font-weight:700;}
+
+/* ========== DEPLOYMENTS ========== */
+.deploy-list{
+  padding:8px 10px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.deploy-row{
+  background:var(--bg-alt);
+  border:1px solid var(--border);
+  border-radius:2px;
+  padding:7px 10px;
+}
+.deploy-row.bad{
+  background:rgba(255,34,51,0.06);
+  border-color:var(--crit-border);
+}
+.deploy-row.suspect{
+  background:rgba(245,158,11,0.06);
+  border-color:var(--warn-border);
+}
+.deploy-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.deploy-svc{font-size:11.5px;font-weight:700;color:var(--txt);}
+.deploy-time{font-size:10px;color:var(--txt3);}
+.deploy-detail{font-size:10px;color:var(--txt3);margin-bottom:3px;}
+.deploy-detail .sha{color:#a78bfa;font-family:var(--font);}
+.deploy-detail .who{color:var(--info);}
+.deploy-msg{font-size:10.5px;color:var(--txt2);font-style:italic;}
+.deploy-msg.bad{color:var(--crit);}
+.deploy-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:1px 5px;border-radius:2px;}
+.deploy-tag.cause{background:var(--crit-bg);border:1px solid var(--crit-border);color:var(--crit);}
+.deploy-tag.suspect{background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);}
+.deploy-tag.ok{background:var(--ok-bg);border:1px solid var(--ok-border);color:var(--ok);}
+.deploy-tag.rollback{background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.35);color:var(--deg);}
+
+/* ========== REGION HEALTH ========== */
+.region-list{
+  padding:8px 10px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.region-row{
+  background:var(--bg-alt);
+  border:1px solid var(--border);
+  border-radius:2px;
+  padding:7px 10px;
+  display:grid;
+  grid-template-columns:110px 1fr 80px 80px;
+  align-items:center;
+  gap:8px;
+}
+.region-row.crit{background:var(--crit-bg);border-color:var(--crit-border);}
+.region-row.deg{background:var(--deg-bg);border-color:rgba(249,115,22,0.35);}
+.region-row.warn{background:var(--warn-bg);border-color:var(--warn-border);}
+.region-name{font-size:11.5px;font-weight:700;color:var(--txt);}
+.region-bar-track{height:8px;background:rgba(255,255,255,0.06);border-radius:1px;overflow:hidden;}
+.region-bar-fill{height:100%;border-radius:1px;}
+.region-bar-fill.crit{background:var(--crit);}
+.region-bar-fill.deg{background:var(--deg);}
+.region-bar-fill.warn{background:var(--warn);}
+.region-bar-fill.ok{background:var(--ok);}
+.region-pct{font-size:11px;text-align:right;font-variant-numeric:tabular-nums;}
+.region-pct.crit{color:var(--crit);}
+.region-pct.warn{color:var(--warn);}
+.region-pct.ok{color:var(--ok);}
+.region-stat{font-size:10px;color:var(--txt3);text-align:right;}
+
+/* ========== MISC ========== */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg-root);}
+::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px;}
+::-webkit-scrollbar-thumb:hover{background:#354070;}
+
+.sep{width:1px;background:var(--border);height:16px;}
+
+.flicker{
+  position:relative;
+}
+.flicker::after{
+  content:'';
+  position:absolute;
+  left:0;top:0;right:0;bottom:0;
+  background:linear-gradient(transparent 50%,rgba(0,0,0,0.04) 50%);
+  background-size:100% 4px;
+  pointer-events:none;
+  opacity:0.4;
+}
+
+/* ===== NETWORK TOPO NODES ===== */
+.topo-node-crit{fill:#1a0510;stroke:var(--crit);stroke-width:1.5px;}
+.topo-node-warn{fill:#12100a;stroke:var(--warn);stroke-width:1px;}
+.topo-node-deg{fill:#110c05;stroke:var(--deg);stroke-width:1px;}
+.topo-node-ok{fill:#060e09;stroke:var(--ok);stroke-width:1px;}
+.topo-edge-crit{stroke:var(--crit);stroke-width:1px;opacity:0.6;}
+.topo-edge-warn{stroke:var(--warn);stroke-width:1px;opacity:0.5;}
+.topo-edge-ok{stroke:#1a3a22;stroke-width:1px;opacity:0.5;}
+.topo-label{fill:var(--txt2);font-size:8px;font-family:'Consolas',monospace;text-anchor:middle;}
+.topo-label-crit{fill:var(--txt-crit);font-size:8px;font-family:'Consolas',monospace;text-anchor:middle;}
+.topo-label-warn{fill:var(--txt-warn);font-size:8px;font-family:'Consolas',monospace;text-anchor:middle;}
+.topo-sublabel{fill:var(--txt3);font-size:7px;font-family:'Consolas',monospace;text-anchor:middle;}
+
+/* ===== SPARKLINE IN SERVICE GRID ===== */
+.svc-spark{
+  display:inline-block;
+  width:50px;
+  height:18px;
+  vertical-align:middle;
+}
+
+/* ===== PANEL HEIGHT HELPERS ===== */
+.h-full{height:100%;}
+.overflow-hidden{overflow:hidden;}
+
+/* ===== GRAPH PANEL SPECIFIC ===== */
+.graph-panel .panel-body{
+  position:relative;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+}
+.graph-overlay{
+  position:absolute;
+  top:8px;
+  left:10px;
+  z-index:5;
+  pointer-events:none;
+}
+
+/* ===== BLAST RADIUS BAR ===== */
+.blast-bar{
+  background:linear-gradient(90deg,rgba(255,34,51,0.15),rgba(255,34,51,0.05));
+  border:1px solid var(--crit-border);
+  border-radius:2px;
+  padding:6px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:0;
+}
+.blast-stat{text-align:center;}
+.blast-num{font-size:16px;font-weight:700;color:var(--crit);font-variant-numeric:tabular-nums;}
+.blast-lbl{font-size:9.5px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;}
+
+/* error rate bar in graph panels */
+.mini-stat-row{display:flex;gap:10px;padding:4px 10px;border-top:1px solid var(--border);flex-shrink:0;}
+.mini-stat{display:flex;flex-direction:column;align-items:center;}
+.mini-stat-v{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;}
+.mini-stat-l{font-size:9px;color:var(--txt3);}
+</style>
+</head>
+<body>
+
+<!-- ===================================================
+     MAIN HEADER
+     =================================================== -->
+<header class="main-hdr">
+  <div class="hdr-top">
+    <div class="hdr-brand">
+      <div class="brand-logo">ACME CORP</div>
+      <div class="brand-sep">|</div>
+      <div class="brand-sub">OPERATIONS CENTER — WAR ROOM</div>
+    </div>
+
+    <div class="hdr-status">
+      <div class="global-status">
+        <span class="global-status-icon">⚠</span>GLOBAL STATUS: CRITICAL INCIDENT
+      </div>
+      <div class="incident-context">ALL REGIONS · 7 P1 INCIDENTS OPEN · CASCADING FAILURE IN PROGRESS</div>
+    </div>
+
+    <div class="hdr-right">
+      <div class="live-clock" id="live-clock">00:00:00</div>
+      <div class="live-date" id="live-date">...</div>
+    </div>
+  </div>
+
+  <div class="hdr-bottom">
+    <div class="hdr-stat">
+      <span class="hdr-stat-label">P1 Open</span>
+      <span class="hdr-stat-val c">7</span>
+    </div>
+    <div class="sep"></div>
+    <div class="hdr-stat">
+      <span class="hdr-stat-label">P2 Open</span>
+      <span class="hdr-stat-val w">12</span>
+    </div>
+    <div class="sep"></div>
+    <div class="hdr-stat">
+      <span class="hdr-stat-label">P3</span>
+      <span class="hdr-stat-val" style="color:var(--txt2)">8</span>
+    </div>
+    <div class="sep"></div>
+    <div class="hdr-stat">
+      <span class="hdr-stat-label">MTTR</span>
+      <span class="hdr-stat-val w" id="mttr">2h 14m 07s</span>
+    </div>
+    <div class="sep"></div>
+    <div class="hdr-stat">
+      <span class="hdr-stat-label">On-Call Ack</span>
+      <span class="hdr-stat-val c">0 / 3 UNANSWERED</span>
+    </div>
+    <div class="sep"></div>
+    <div class="hdr-stat">
+      <span class="hdr-stat-label">Error Budget</span>
+      <span class="hdr-stat-val c">DEPLETED (-234%)</span>
+    </div>
+    <div class="sep"></div>
+    <div class="sla-breach">
+      <span class="sla-label">⏱ SLA BREACH IN</span>
+      <span class="sla-timer" id="sla-timer">00:13:47</span>
+    </div>
+    <div class="freeze-badge">❄ CHANGE FREEZE ACTIVE</div>
+    <div class="violation-badge">⚡ FREEZE VIOLATION DETECTED</div>
+  </div>
+</header>
+
+<!-- ===================================================
+     BLAST RADIUS
+     =================================================== -->
+<div style="padding:6px 6px 0;">
+  <div class="blast-bar">
+    <div class="blast-stat">
+      <div class="blast-num" id="br-services">12 / 24</div>
+      <div class="blast-lbl">Services Critical</div>
+    </div>
+    <div class="blast-stat">
+      <div class="blast-num" id="br-users">1,247,382</div>
+      <div class="blast-lbl">Users Impacted</div>
+    </div>
+    <div class="blast-stat">
+      <div class="blast-num" id="br-tpm">8,412</div>
+      <div class="blast-lbl">Failed Txn/min</div>
+    </div>
+    <div class="blast-stat">
+      <div class="blast-num" id="br-revenue">$47,280/min</div>
+      <div class="blast-lbl">Revenue Impact</div>
+    </div>
+    <div class="blast-stat">
+      <div class="blast-num" id="br-errors">2.3M</div>
+      <div class="blast-lbl">Errors (last 5m)</div>
+    </div>
+    <div class="blast-stat">
+      <div class="blast-num">99.97%</div>
+      <div class="blast-lbl">SLA Target (BREACHED)</div>
+    </div>
+    <div class="blast-stat">
+      <div class="blast-num" id="br-uptime" style="color:var(--crit)">73.14%</div>
+      <div class="blast-lbl">Current Uptime</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     MAIN DASHBOARD GRID
+     =================================================== -->
+<main class="dashboard">
+
+  <!-- ROW 1: Service Health + Active Incidents -->
+  <div class="row row-1">
+
+    <!-- Service Health -->
+    <div class="panel crit-border" style="max-height:320px;">
+      <div class="panel-hdr">
+        <div class="panel-title">
+          <div class="dot dot-crit"></div>
+          Service Health
+        </div>
+        <div class="panel-meta">
+          <span style="color:var(--crit)">12 CRITICAL</span>
+          <span style="color:var(--warn)">5 WARN</span>
+          <span style="color:var(--ok)">7 OK</span>
+        </div>
+      </div>
+      <div class="panel-body" style="overflow-y:auto;">
+        <div class="svc-list">
+
+          <div class="svc-row crit-row">
+            <div class="dot dot-crit"></div>
+            <div class="svc-name">payment-service <span>us-east-1</span></div>
+            <div class="badge badge-crit">CRITICAL</div>
+            <div class="svc-metric crit" id="svc-payment-err">47.3% err</div>
+          </div>
+
+          <div class="svc-row crit-row">
+            <div class="dot dot-crit"></div>
+            <div class="svc-name">api-gateway <span>us-east-1</span></div>
+            <div class="badge badge-crit">CRITICAL</div>
+            <div class="svc-metric crit">503 flood</div>
+          </div>
+
+          <div class="svc-row crit-row">
+            <div class="dot dot-crit"></div>
+            <div class="svc-name">checkout-service <span>us-east-1</span></div>
+            <div class="badge badge-crit">CRITICAL</div>
+            <div class="svc-metric crit" id="svc-checkout-err">61.2% err</div>
+          </div>
+
+          <div class="svc-row crit-row">
+            <div class="dot dot-crit"></div>
+            <div class="svc-name">order-service <span>us-east-1</span></div>
+            <div class="badge badge-crit">CRITICAL</div>
+            <div class="svc-metric crit">OOMKilled</div>
+          </div>
+
+          <div class="svc-row crit-row">
+            <div class="dot dot-crit"></div>
+            <div class="svc-name">notification-svc <span>us-east-1</span></div>
+            <div class="badge badge-crit">CRITICAL</div>
+            <div class="svc-metric crit">queue: 847K</div>
+          </div>
+
+          <div class="svc-row crit-row">
+            <div class="dot dot-crit"></div>
+            <div class="svc-name">cdn-edge-us-east <span>CloudFront</span></div>
+            <div class="badge badge-crit">CRITICAL</div>
+            <div class="svc-metric crit">origin err 61%</div>
+          </div>
+
+          <div class="svc-row crit-row">
+            <div class="dot dot-crit"></div>
+            <div class="svc-name">lb-prod-01/02 <span>us-east-1</span></div>
+            <div class="badge badge-crit">CRITICAL</div>
+            <div class="svc-metric crit">health fail</div>
+          </div>
+
+          <div class="svc-row" style="background:var(--deg-bg);">
+            <div class="dot dot-deg"></div>
+            <div class="svc-name">auth-service <span>us-east-1</span></div>
+            <div class="badge badge-deg">DEGRADED</div>
+            <div class="svc-metric warn">p99: 4,230ms</div>
+          </div>
+
+          <div class="svc-row" style="background:var(--deg-bg);">
+            <div class="dot dot-deg"></div>
+            <div class="svc-name">fraud-detection <span>us-east-1</span></div>
+            <div class="badge badge-deg">DEGRADED</div>
+            <div class="svc-metric warn">9.2% err</div>
+          </div>
+
+          <div class="svc-row" style="background:var(--warn-bg);">
+            <div class="dot dot-warn"></div>
+            <div class="svc-name">user-service <span>us-east-1</span></div>
+            <div class="badge badge-warn">WARNING</div>
+            <div class="svc-metric warn" id="svc-user-lat">p99: 1,842ms</div>
+          </div>
+
+          <div class="svc-row" style="background:var(--warn-bg);">
+            <div class="dot dot-warn"></div>
+            <div class="svc-name">inventory-svc <span>us-east-1</span></div>
+            <div class="badge badge-warn">WARNING</div>
+            <div class="svc-metric warn">3.1% err</div>
+          </div>
+
+          <div class="svc-row">
+            <div class="dot dot-ok"></div>
+            <div class="svc-name">analytics-svc <span>us-east-1</span></div>
+            <div class="badge badge-ok">OK</div>
+            <div class="svc-metric" style="color:var(--ok)">0.01% err</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Incidents -->
+    <div class="panel crit-border" style="max-height:320px;">
+      <div class="panel-hdr">
+        <div class="panel-title">
+          <div class="dot dot-crit"></div>
+          Active Incidents
+          <span class="badge badge-crit">7 P1 OPEN</span>
+        </div>
+        <div class="panel-meta">
+          <span style="color:var(--crit)">5 UNASSIGNED</span>
+          <span class="sep"></span>
+          PagerDuty · Jira
+        </div>
+      </div>
+      <div class="panel-body" style="overflow-y:auto;">
+        <table class="inc-table">
+          <thead>
+            <tr>
+              <th>Incident</th>
+              <th>SEV</th>
+              <th>Title</th>
+              <th>Duration</th>
+              <th>Assignee</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="incidents-tbody">
+            <tr>
+              <td class="inc-id">INC-4821</td>
+              <td><span class="p1">P1</span></td>
+              <td class="inc-title">DB Connection Pool Exhausted — postgres-primary-us-east-1</td>
+              <td class="inc-dur" data-started="2821">47:23</td>
+              <td class="inc-assign unassigned">⚠ UNASSIGNED</td>
+              <td><span class="badge badge-crit">OPEN</span></td>
+            </tr>
+            <tr>
+              <td class="inc-id">INC-4820</td>
+              <td><span class="p1">P1</span></td>
+              <td class="inc-title">K8s Pods CrashLoopBackOff — payments namespace (18 pods)</td>
+              <td class="inc-dur" data-started="3143">52:23</td>
+              <td class="inc-assign unassigned">⚠ UNASSIGNED</td>
+              <td><span class="badge badge-crit">OPEN</span></td>
+            </tr>
+            <tr>
+              <td class="inc-id">INC-4819</td>
+              <td><span class="p1">P1</span></td>
+              <td class="inc-title">Payment Service HTTP 503 Storm — 47% error rate</td>
+              <td class="inc-dur" data-started="3783">1h 03:03</td>
+              <td class="inc-assign" style="color:var(--info)">@mike.chen</td>
+              <td><span class="badge badge-crit">OPEN</span></td>
+            </tr>
+            <tr>
+              <td class="inc-id">INC-4817</td>
+              <td><span class="p1">P1</span></td>
+              <td class="inc-title">CDN Origin Health Check Failures — us-east-1 origin pool</td>
+              <td class="inc-dur" data-started="4271">1h 11:11</td>
+              <td class="inc-assign unassigned">⚠ UNASSIGNED</td>
+              <td><span class="badge badge-crit">OPEN</span></td>
+            </tr>
+            <tr>
+              <td class="inc-id">INC-4816</td>
+              <td><span class="p1">P1</span></td>
+              <td class="inc-title">Network Packet Loss AZ-B — 12.4% loss between nodes</td>
+              <td class="inc-dur" data-started="5308">1h 28:28</td>
+              <td class="inc-assign unassigned">⚠ UNASSIGNED</td>
+              <td><span class="badge badge-crit">OPEN</span></td>
+            </tr>
+            <tr>
+              <td class="inc-id">INC-4815</td>
+              <td><span class="p1">P1</span></td>
+              <td class="inc-title">Postgres Replica Lag 127-141s — ALL replicas affected</td>
+              <td class="inc-dur" data-started="8047">2h 14:07</td>
+              <td class="inc-assign" style="color:var(--info)">@sarah.kim</td>
+              <td><span class="badge badge-crit">OPEN</span></td>
+            </tr>
+            <tr>
+              <td class="inc-id">INC-4812</td>
+              <td><span class="p1">P1</span></td>
+              <td class="inc-title">LB Health Check Failures — lb-prod-01 and lb-prod-02</td>
+              <td class="inc-dur" data-started="11227">3h 07:07</td>
+              <td class="inc-assign unassigned">⚠ UNASSIGNED</td>
+              <td><span class="badge badge-crit">OPEN</span></td>
+            </tr>
+            <tr>
+              <td class="inc-id">INC-4808</td>
+              <td><span class="p2">P2</span></td>
+              <td class="inc-title">Redis cache hit rate 7.8% — cache cluster degraded</td>
+              <td class="inc-dur" data-started="13500">3h 45:00</td>
+              <td class="inc-assign" style="color:var(--info)">@priya.v</td>
+              <td><span class="badge badge-warn">OPEN</span></td>
+            </tr>
+            <tr>
+              <td class="inc-id">INC-4801</td>
+              <td><span class="p2">P2</span></td>
+              <td class="inc-title">SES sending rate throttled — email delivery delayed 45m+</td>
+              <td class="inc-dur" data-started="16200">4h 30:00</td>
+              <td class="inc-assign unassigned">⚠ UNASSIGNED</td>
+              <td><span class="badge badge-warn">OPEN</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: 4 Metric Graphs -->
+  <div class="row row-2" style="height:180px;">
+
+    <div class="panel graph-panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><div class="dot dot-crit"></div>CPU Utilization · web-prod cluster</div>
+        <div class="panel-meta" style="color:var(--txt3)">avg 8 nodes · 1m</div>
+      </div>
+      <div class="panel-body graph-panel">
+        <div class="graph-overlay">
+          <div class="graph-num crit" id="cpu-val">98.7%</div>
+          <div class="graph-delta up" id="cpu-delta">↑ +3.2% since last tick</div>
+        </div>
+        <canvas class="graph-canvas" id="canvas-cpu"></canvas>
+        <div class="mini-stat-row">
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--crit)">100%</div><div class="mini-stat-l">MAX</div></div>
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--crit)" id="cpu-p95">97.3%</div><div class="mini-stat-l">P95</div></div>
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--ok)">2.1%</div><div class="mini-stat-l">1H AGO</div></div>
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--txt3)">3</div><div class="mini-stat-l">THROTTLED</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel graph-panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><div class="dot dot-crit"></div>Memory Usage · web-prod cluster</div>
+        <div class="panel-meta" style="color:var(--txt3)">avg 8 nodes · 1m</div>
+      </div>
+      <div class="panel-body graph-panel">
+        <div class="graph-overlay">
+          <div class="graph-num deg" id="mem-val">97.1%</div>
+          <div class="graph-delta up" id="mem-delta">↑ +0.8% (OOMKill imminent)</div>
+        </div>
+        <canvas class="graph-canvas" id="canvas-mem"></canvas>
+        <div class="mini-stat-row">
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--crit)">7 OOM</div><div class="mini-stat-l">KILLED</div></div>
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--warn)" id="mem-swap">2.1GB</div><div class="mini-stat-l">SWAP</div></div>
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--ok)">61.2%</div><div class="mini-stat-l">1H AGO</div></div>
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--txt3)">32GB</div><div class="mini-stat-l">LIMIT</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel graph-panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><div class="dot dot-crit"></div>HTTP Error Rate · all services</div>
+        <div class="panel-meta" style="color:var(--txt3)">5xx+4xx · 1m avg</div>
+      </div>
+      <div class="panel-body graph-panel">
+        <div class="graph-overlay">
+          <div class="graph-num crit" id="err-val">47.3%</div>
+          <div class="graph-delta up" id="err-delta">↑ was 0.04% 2h ago</div>
+        </div>
+        <canvas class="graph-canvas" id="canvas-err"></canvas>
+        <div class="mini-stat-row">
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--crit)" id="err-503">38.2%</div><div class="mini-stat-l">503s</div></div>
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--warn)" id="err-504">8.7%</div><div class="mini-stat-l">504s</div></div>
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--txt2)">0.4%</div><div class="mini-stat-l">500s</div></div>
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--ok)">0.04%</div><div class="mini-stat-l">NORMAL</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel graph-panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><div class="dot dot-warn"></div>P99 Latency · api-gateway</div>
+        <div class="panel-meta" style="color:var(--txt3)">rolling 5m · upstream</div>
+      </div>
+      <div class="panel-body graph-panel">
+        <div class="graph-overlay">
+          <div class="graph-num warn" id="lat-val">8,452ms</div>
+          <div class="graph-delta up" id="lat-delta">↑ SLA: 500ms · 16.9x breach</div>
+        </div>
+        <canvas class="graph-canvas" id="canvas-lat"></canvas>
+        <div class="mini-stat-row">
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--crit)" id="lat-max">29,841ms</div><div class="mini-stat-l">MAX</div></div>
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--warn)" id="lat-p50">4,201ms</div><div class="mini-stat-l">P50</div></div>
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--ok)">87ms</div><div class="mini-stat-l">1H AGO</div></div>
+          <div class="mini-stat"><div class="mini-stat-v" style="color:var(--txt3)">500ms</div><div class="mini-stat-l">SLA</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROW 3: K8s + DB Pool + Replication -->
+  <div class="row row-3" style="height:240px;">
+
+    <!-- K8s Pod Status -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title">
+          <div class="dot dot-crit"></div>
+          Kubernetes Pod Status
+          <span class="badge badge-crit">18 CRASH</span>
+          <span class="badge badge-warn">7 TERMINATING</span>
+        </div>
+        <div class="panel-meta">
+          cluster: prod-us-east-1-eks · 6 nodes
+        </div>
+      </div>
+      <div class="panel-body pod-scroll">
+        <table class="pod-table">
+          <thead>
+            <tr>
+              <th>Namespace</th>
+              <th>Pod Name</th>
+              <th>Status</th>
+              <th>Restarts</th>
+              <th>CPU</th>
+              <th>Mem</th>
+              <th>Age</th>
+            </tr>
+          </thead>
+          <tbody id="pod-tbody">
+            <tr><td class="pod-ns">payments</td><td class="pod-name">payment-svc-7d9f4b-<em>xkp9m</em></td><td class="pod-status ps-crash">CrashLoopBackOff</td><td class="pod-restarts high">47</td><td class="pod-res crit">0m</td><td class="pod-res">0Mi</td><td class="pod-res">2h</td></tr>
+            <tr><td class="pod-ns">payments</td><td class="pod-name">payment-svc-7d9f4b-<em>r4t8n</em></td><td class="pod-status ps-oom">OOMKilled</td><td class="pod-restarts high">23</td><td class="pod-res crit">0m</td><td class="pod-res crit">4096Mi</td><td class="pod-res">2h</td></tr>
+            <tr><td class="pod-ns">payments</td><td class="pod-name">payment-svc-7d9f4b-<em>wq2lz</em></td><td class="pod-status ps-crash">CrashLoopBackOff</td><td class="pod-restarts high">41</td><td class="pod-res crit">0m</td><td class="pod-res">0Mi</td><td class="pod-res">2h</td></tr>
+            <tr><td class="pod-ns">payments</td><td class="pod-name">payment-svc-7d9f4b-<em>m7v3p</em></td><td class="pod-status ps-crash">CrashLoopBackOff</td><td class="pod-restarts">38</td><td class="pod-res crit">0m</td><td class="pod-res">0Mi</td><td class="pod-res">2h</td></tr>
+            <tr><td class="pod-ns">payments</td><td class="pod-name">payment-svc-7d9f4b-<em>j9k1s</em></td><td class="pod-status ps-run">Running</td><td class="pod-restarts">12</td><td class="pod-res warn">1980m</td><td class="pod-res warn">3812Mi</td><td class="pod-res">2h</td></tr>
+            <tr><td class="pod-ns">payments</td><td class="pod-name">checkout-svc-5c9a1e-<em>bnz4x</em></td><td class="pod-status ps-oom">OOMKilled</td><td class="pod-restarts high">31</td><td class="pod-res crit">0m</td><td class="pod-res crit">4096Mi</td><td class="pod-res">2h</td></tr>
+            <tr><td class="pod-ns">payments</td><td class="pod-name">checkout-svc-5c9a1e-<em>qm8py</em></td><td class="pod-status ps-crash">CrashLoopBackOff</td><td class="pod-restarts high">27</td><td class="pod-res crit">0m</td><td class="pod-res">0Mi</td><td class="pod-res">2h</td></tr>
+            <tr><td class="pod-ns">payments</td><td class="pod-name">checkout-svc-5c9a1e-<em>tf6jk</em></td><td class="pod-status ps-err">Error</td><td class="pod-restarts">19</td><td class="pod-res crit">0m</td><td class="pod-res">8Mi</td><td class="pod-res">2h</td></tr>
+            <tr><td class="pod-ns">platform</td><td class="pod-name">api-gateway-6c8d2a-<em>vh5nm</em></td><td class="pod-status ps-crash">CrashLoopBackOff</td><td class="pod-restarts">34</td><td class="pod-res crit">0m</td><td class="pod-res">0Mi</td><td class="pod-res">2h</td></tr>
+            <tr><td class="pod-ns">platform</td><td class="pod-name">api-gateway-6c8d2a-<em>dk2ws</em></td><td class="pod-status ps-run">Running</td><td class="pod-restarts">8</td><td class="pod-res warn">1820m</td><td class="pod-res warn">3201Mi</td><td class="pod-res">2h</td></tr>
+            <tr><td class="pod-ns">orders</td><td class="pod-name">order-svc-4b8f3c-<em>lp7tx</em></td><td class="pod-status ps-crash">CrashLoopBackOff</td><td class="pod-restarts high">52</td><td class="pod-res crit">0m</td><td class="pod-res">0Mi</td><td class="pod-res">2h</td></tr>
+            <tr><td class="pod-ns">orders</td><td class="pod-name">order-svc-4b8f3c-<em>ry9qv</em></td><td class="pod-status ps-term">Terminating</td><td class="pod-restarts">18</td><td class="pod-res">120m</td><td class="pod-res">1842Mi</td><td class="pod-res">2h</td></tr>
+            <tr><td class="pod-ns">orders</td><td class="pod-name">order-svc-4b8f3c-<em>en3gb</em></td><td class="pod-status ps-pend">Pending</td><td class="pod-restarts">0</td><td class="pod-res">0m</td><td class="pod-res">0Mi</td><td class="pod-res">14m</td></tr>
+            <tr><td class="pod-ns">platform</td><td class="pod-name">k8s-node-04 <em>(NotReady)</em></td><td class="pod-status ps-crash" style="font-style:italic">NODE FAILURE</td><td class="pod-restarts">—</td><td class="pod-res crit">98.4%</td><td class="pod-res crit">97.8%</td><td class="pod-res">47m</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DB Connection Pool -->
+    <div class="panel crit-border">
+      <div class="panel-hdr">
+        <div class="panel-title"><div class="dot dot-crit"></div>DB Connection Pool</div>
+        <div class="panel-meta">postgres-primary-us-east-1</div>
+      </div>
+      <div class="panel-body">
+        <div class="db-pool-body">
+          <div class="pool-big">
+            <div class="pool-big-num" id="pool-active">98</div>
+            <div class="pool-big-label">Active Connections</div>
+          </div>
+
+          <div class="pool-gauge-wrap">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:9.5px;color:var(--txt3);">
+              <span>0</span><span style="color:var(--crit);font-weight:700;" id="pool-pct">98 / 100</span><span>100</span>
+            </div>
+            <div class="pool-gauge-track">
+              <div class="pool-gauge-fill" id="pool-bar" style="width:98%"></div>
+            </div>
+          </div>
+
+          <div class="pool-queue">
+            <div class="queue-num" id="queue-num">847</div>
+            <div class="queue-label">Requests in Queue</div>
+          </div>
+
+          <div class="pool-stat">
+            <span class="pool-stat-label">Max Wait Time</span>
+            <span class="pool-stat-val crit" id="wait-time">23.4s</span>
+          </div>
+          <div class="pool-stat">
+            <span class="pool-stat-label">Avg Query Time</span>
+            <span class="pool-stat-val warn">12,847ms</span>
+          </div>
+          <div class="pool-stat">
+            <span class="pool-stat-label">Deadlocks/min</span>
+            <span class="pool-stat-val crit" id="deadlocks">142</span>
+          </div>
+          <div class="pool-stat">
+            <span class="pool-stat-label">Replication Slot</span>
+            <span class="pool-stat-val crit">OVERFLOW</span>
+          </div>
+          <div class="pool-stat">
+            <span class="pool-stat-label">WAL Files</span>
+            <span class="pool-stat-val warn">4,821 pending</span>
+          </div>
+          <div style="margin-top:4px;padding:4px 6px;background:var(--crit-bg);border:1px solid var(--crit-border);border-radius:2px;font-size:9.5px;color:var(--crit);">
+            ⚠ REFUSING NEW CONNECTIONS — max_connections exceeded
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Replication Lag -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><div class="dot dot-crit"></div>Postgres Replication Lag</div>
+        <div class="panel-meta">RDS · us-east-1</div>
+      </div>
+      <div class="panel-body">
+        <div class="rep-list">
+
+          <div class="rep-item crit-bg">
+            <div class="rep-name">
+              <span>postgres-replica-1a</span>
+              <span class="badge badge-crit">CRITICAL</span>
+            </div>
+            <div class="rep-lag-bar-track"><div class="rep-lag-bar-fill crit" id="rep1a-bar" style="width:85%"></div></div>
+            <div class="rep-stats"><span>Lag:</span><span class="v" id="rep1a-lag">127.3s</span></div>
+          </div>
+
+          <div class="rep-item crit-bg">
+            <div class="rep-name">
+              <span>postgres-replica-1b</span>
+              <span class="badge badge-crit">CRITICAL</span>
+            </div>
+            <div class="rep-lag-bar-track"><div class="rep-lag-bar-fill crit" id="rep1b-bar" style="width:90%"></div></div>
+            <div class="rep-stats"><span>Lag:</span><span class="v" id="rep1b-lag">134.7s</span></div>
+          </div>
+
+          <div class="rep-item crit-bg">
+            <div class="rep-name">
+              <span>postgres-replica-1c</span>
+              <span class="badge badge-crit">CRITICAL</span>
+            </div>
+            <div class="rep-lag-bar-track"><div class="rep-lag-bar-fill crit" id="rep1c-bar" style="width:94%"></div></div>
+            <div class="rep-stats"><span>Lag:</span><span class="v" id="rep1c-lag">141.2s</span></div>
+          </div>
+
+          <div class="rep-item" style="border-color:var(--warn-border);background:var(--warn-bg);">
+            <div class="rep-name">
+              <span>postgres-replica-2a (us-west-2)</span>
+              <span class="badge badge-warn">WARN</span>
+            </div>
+            <div class="rep-lag-bar-track"><div class="rep-lag-bar-fill warn" style="width:32%"></div></div>
+            <div class="rep-stats"><span>Lag:</span><span style="color:var(--warn);font-weight:700;">47.8s</span></div>
+          </div>
+
+          <div style="padding:5px 0;font-size:9.5px;color:var(--txt3);">
+            Standby trigger threshold: <span style="color:var(--warn)">30s</span>
+            · Failover threshold: <span style="color:var(--crit)">120s</span>
+            · Status: <span style="color:var(--crit)">EXCEEDED</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROW 4: Alert Feed + Log Stream + Topology -->
+  <div class="row row-4" style="height:310px;">
+
+    <!-- PagerDuty Alert Feed -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title">
+          <div class="dot dot-crit"></div>
+          PagerDuty · Alert Feed
+        </div>
+        <div class="panel-meta">
+          <span class="badge badge-crit" id="alert-count">34 UNACKED</span>
+        </div>
+      </div>
+      <div class="panel-body alert-scroll" id="alert-feed">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- Live Log Stream -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title">
+          <div class="dot dot-crit" style="animation:blink 0.5s step-end infinite;"></div>
+          Live Log Stream
+          <span style="font-size:9px;color:var(--crit);animation:blink 1s step-end infinite;">● LIVE</span>
+        </div>
+        <div class="panel-meta">
+          Splunk · production · all-services
+        </div>
+      </div>
+      <div class="panel-body log-scroll" id="log-stream">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- Network Topology Map -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><div class="dot dot-crit"></div>Service Topology</div>
+        <div class="panel-meta">us-east-1 · Datadog</div>
+      </div>
+      <div class="panel-body topology-wrap">
+        <svg class="topo-svg" id="topo-svg" viewBox="0 0 280 290" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background -->
+          <rect width="280" height="290" fill="#07070f"/>
+          <!-- Grid -->
+          <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#111122" stroke-width="0.5"/>
+            </pattern>
+            <filter id="glow-crit">
+              <feGaussianBlur stdDeviation="2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <rect width="280" height="290" fill="url(#grid)"/>
+
+          <!-- Edges -->
+          <!-- Internet → CDN -->
+          <line x1="140" y1="22" x2="140" y2="48" class="topo-edge-crit" stroke-dasharray="3,2"/>
+          <!-- CDN → LB -->
+          <line x1="140" y1="66" x2="140" y2="92" class="topo-edge-crit"/>
+          <!-- LB → API-GW -->
+          <line x1="132" y1="109" x2="90" y2="133" class="topo-edge-crit"/>
+          <!-- LB → CDN-ORIGIN -->
+          <line x1="148" y1="109" x2="210" y2="133" class="topo-edge-warn"/>
+          <!-- API-GW → payment -->
+          <line x1="78" y1="150" x2="54" y2="175" class="topo-edge-crit"/>
+          <!-- API-GW → order -->
+          <line x1="88" y1="151" x2="90" y2="175" class="topo-edge-crit"/>
+          <!-- API-GW → auth -->
+          <line x1="98" y1="150" x2="148" y2="175" class="topo-edge-warn"/>
+          <!-- payment → postgres -->
+          <line x1="54" y1="192" x2="80" y2="222" class="topo-edge-crit" stroke-dasharray="2,2"/>
+          <!-- order → postgres -->
+          <line x1="90" y1="192" x2="90" y2="222" class="topo-edge-crit" stroke-dasharray="2,2"/>
+          <!-- auth → redis -->
+          <line x1="155" y1="192" x2="190" y2="222" class="topo-edge-warn"/>
+          <!-- postgres → replica1 -->
+          <line x1="74" y1="242" x2="40" y2="264" class="topo-edge-crit" stroke-dasharray="2,2"/>
+          <!-- postgres → replica2 -->
+          <line x1="84" y1="243" x2="84" y2="264" class="topo-edge-crit" stroke-dasharray="2,2"/>
+          <!-- postgres → replica3 -->
+          <line x1="96" y1="242" x2="128" y2="264" class="topo-edge-crit" stroke-dasharray="2,2"/>
+
+          <!-- Edge labels -->
+          <text x="151" y="38" style="fill:#ff2233;font-size:6.5px;font-family:Consolas,monospace;">FAIL 61%</text>
+          <text x="151" y="82" style="fill:#ff2233;font-size:6.5px;font-family:Consolas,monospace;">503s</text>
+          <text x="97" y="125" style="fill:#ff2233;font-size:6px;font-family:Consolas,monospace;">47% err</text>
+          <text x="200" y="125" style="fill:#f59e0b;font-size:6px;font-family:Consolas,monospace;">9.2% err</text>
+          <text x="14" y="192" style="fill:#ff2233;font-size:6px;font-family:Consolas,monospace;">TIMEO</text>
+          <text x="40" y="215" style="fill:#ff2233;font-size:6px;font-family:Consolas,monospace;">pool full</text>
+          <text x="26" y="258" style="fill:#ff2233;font-size:6px;font-family:Consolas,monospace;">lag 127s</text>
+          <text x="91" y="258" style="fill:#ff2233;font-size:6px;font-family:Consolas,monospace;">lag 135s</text>
+          <text x="120" y="258" style="fill:#ff2233;font-size:6px;font-family:Consolas,monospace;">lag 141s</text>
+
+          <!-- NODES -->
+          <!-- Internet -->
+          <circle cx="140" cy="14" r="10" class="topo-node-ok"/>
+          <text x="140" y="17" class="topo-label">INTERNET</text>
+
+          <!-- CDN Edge (CRITICAL) -->
+          <rect x="112" y="48" width="56" height="18" rx="2" class="topo-node-crit" filter="url(#glow-crit)"/>
+          <text x="140" y="60" class="topo-label-crit">CDN-EDGE</text>
+
+          <!-- Load Balancer (CRITICAL) -->
+          <rect x="112" y="92" width="56" height="17" rx="2" class="topo-node-crit" filter="url(#glow-crit)"/>
+          <text x="140" y="104" class="topo-label-crit">LB-PROD-01/02</text>
+
+          <!-- API Gateway (CRITICAL) -->
+          <rect x="56" y="133" width="64" height="17" rx="2" class="topo-node-crit" filter="url(#glow-crit)"/>
+          <text x="88" y="145" class="topo-label-crit">API-GATEWAY</text>
+
+          <!-- CDN Origin (WARNING) -->
+          <rect x="181" y="133" width="58" height="17" rx="2" class="topo-node-warn"/>
+          <text x="210" y="145" class="topo-label-warn">CDN-ORIGIN</text>
+
+          <!-- payment-service (CRITICAL) -->
+          <rect x="18" y="175" width="72" height="17" rx="2" class="topo-node-crit" filter="url(#glow-crit)"/>
+          <text x="54" y="187" class="topo-label-crit">payment-svc</text>
+
+          <!-- order-service (CRITICAL) -->
+          <rect x="60" y="175" width="60" height="17" rx="2" class="topo-node-crit" filter="url(#glow-crit)"/>
+          <text x="90" y="187" class="topo-label-crit">order-svc</text>
+
+          <!-- auth-service (DEGRADED) -->
+          <rect x="122" y="175" width="60" height="17" rx="2" class="topo-node-deg" style="fill:#11090a;stroke:var(--deg)"/>
+          <text x="152" y="187" style="fill:var(--txt-deg);font-size:8px;font-family:'Consolas',monospace;text-anchor:middle;">auth-svc</text>
+
+          <!-- postgres (CRITICAL) -->
+          <rect x="48" y="222" width="72" height="17" rx="2" class="topo-node-crit" filter="url(#glow-crit)"/>
+          <text x="84" y="234" class="topo-label-crit">POSTGRES-PRI</text>
+
+          <!-- redis (WARNING) -->
+          <rect x="162" y="222" width="58" height="17" rx="2" class="topo-node-warn"/>
+          <text x="191" y="234" class="topo-label-warn">REDIS-CLUSTER</text>
+
+          <!-- replicas -->
+          <rect x="10" y="264" width="58" height="14" rx="1" class="topo-node-crit"/>
+          <text x="39" y="274" class="topo-label-crit" style="font-size:7px;">replica-1a</text>
+
+          <rect x="55" y="264" width="58" height="14" rx="1" class="topo-node-crit"/>
+          <text x="84" y="274" class="topo-label-crit" style="font-size:7px;">replica-1b</text>
+
+          <rect x="100" y="264" width="58" height="14" rx="1" class="topo-node-crit"/>
+          <text x="129" y="274" class="topo-label-crit" style="font-size:7px;">replica-1c</text>
+
+          <!-- k8s node failure indicator -->
+          <rect x="195" y="264" width="74" height="22" rx="2" style="fill:#1a0505;stroke:#ff2233;stroke-width:1px;"/>
+          <text x="232" y="273" style="fill:#ff4444;font-size:7.5px;font-family:Consolas,monospace;text-anchor:middle;font-weight:700;">k8s-node-04</text>
+          <text x="232" y="282" style="fill:#ff2233;font-size:7px;font-family:Consolas,monospace;text-anchor:middle;">● NotReady</text>
+
+          <!-- Legend -->
+          <circle cx="12" cy="12" r="4" style="fill:#1a0510;stroke:#ff2233;stroke-width:1px;"/>
+          <text x="19" y="15" style="fill:#ff4444;font-size:7px;font-family:Consolas,monospace;">CRITICAL</text>
+          <circle cx="12" cy="24" r="4" style="fill:#12100a;stroke:#f59e0b;stroke-width:1px;"/>
+          <text x="19" y="27" style="fill:#fbbf24;font-size:7px;font-family:Consolas,monospace;">DEGRADED</text>
+        </svg>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROW 5: On-Call + Deployments + Region Health -->
+  <div class="row row-5">
+
+    <!-- On-Call Escalation -->
+    <div class="panel crit-border">
+      <div class="panel-hdr">
+        <div class="panel-title">
+          <div class="dot dot-crit"></div>
+          On-Call Escalation
+          <span class="badge badge-crit">3 UNANSWERED</span>
+        </div>
+        <div class="panel-meta">PagerDuty · Schedule: primary-oncall</div>
+      </div>
+      <div class="panel-body">
+        <div class="oncall-list">
+
+          <div class="oncall-row unanswered">
+            <div>
+              <div class="oncall-tier">L1 PRIMARY</div>
+            </div>
+            <div>
+              <div class="oncall-name">Alex Martinez</div>
+              <div class="oncall-phone">+1-415-●●●-3847</div>
+            </div>
+            <div class="oncall-status unans">UNANSWERED</div>
+            <div class="oncall-pages"><span>3</span> pages · <span id="oc-l1-time">47:23</span> ago</div>
+          </div>
+
+          <div class="oncall-row unanswered">
+            <div>
+              <div class="oncall-tier">L2 SECONDARY</div>
+            </div>
+            <div>
+              <div class="oncall-name">Sarah Kim</div>
+              <div class="oncall-phone">+1-415-●●●-9204</div>
+            </div>
+            <div class="oncall-status unans">UNANSWERED</div>
+            <div class="oncall-pages"><span>2</span> pages · <span id="oc-l2-time">35:11</span> ago</div>
+          </div>
+
+          <div class="oncall-row unanswered">
+            <div>
+              <div class="oncall-tier">L3 MANAGER</div>
+            </div>
+            <div>
+              <div class="oncall-name">James Chen</div>
+              <div class="oncall-phone">+1-415-●●●-6671</div>
+            </div>
+            <div class="oncall-status unans">UNANSWERED</div>
+            <div class="oncall-pages"><span>1</span> page · <span id="oc-l3-time">22:47</span> ago</div>
+          </div>
+
+          <div class="oncall-row escalating">
+            <div>
+              <div class="oncall-tier">VP ENG</div>
+            </div>
+            <div>
+              <div class="oncall-name">Rachel Park</div>
+              <div class="oncall-phone">+1-650-●●●-2218</div>
+            </div>
+            <div class="oncall-status esc">PAGING…</div>
+            <div class="oncall-pages"><span style="color:var(--warn)">0</span> acked · <span id="oc-vp-time">03:12</span> ago</div>
+          </div>
+
+          <div class="oncall-row" style="opacity:0.6">
+            <div>
+              <div class="oncall-tier">CTO</div>
+            </div>
+            <div>
+              <div class="oncall-name">Mark Sullivan</div>
+              <div class="oncall-phone">+1-650-●●●-0041</div>
+            </div>
+            <div class="oncall-status" style="color:var(--txt3)">NOT YET</div>
+            <div class="oncall-pages" style="color:var(--txt3)">Auto-page in <span id="cto-page-timer" style="color:var(--warn)">07:48</span></div>
+          </div>
+
+          <div style="margin-top:6px;padding:6px 10px;background:rgba(245,158,11,0.06);border:1px solid var(--warn-border);border-radius:2px;font-size:10px;color:var(--txt-warn);">
+            ⚠ SLACK #incidents: "I silenced my phone sorry, international flight. Can someone else handle?" — @mike.chen (47m ago)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Deployments -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><div class="dot dot-warn"></div>Recent Deployments</div>
+        <div class="panel-meta">
+          <span class="badge badge-crit">FREEZE VIOLATION</span>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="deploy-list">
+
+          <div class="deploy-row bad">
+            <div class="deploy-top">
+              <div class="deploy-svc">order-service <span style="color:var(--txt3)">v2.4.1</span></div>
+              <div class="deploy-time">2h 14m ago · prod-us-east-1</div>
+            </div>
+            <div class="deploy-detail">
+              SHA: <span class="sha">a3f82bc</span> · By: <span class="who">@james.chen</span> · <span style="color:var(--crit)">DURING CHANGE FREEZE</span>
+            </div>
+            <div class="deploy-msg bad">"feat: new checkout flow with stripe v4 migration"</div>
+            <div style="margin-top:5px;display:flex;gap:6px;align-items:center;">
+              <span class="deploy-tag cause">⚡ PROBABLE CAUSE</span>
+              <span class="deploy-tag rollback">↩ ROLLBACK ATTEMPTED</span>
+              <span style="font-size:9.5px;color:var(--crit)">DB migration irreversible</span>
+            </div>
+          </div>
+
+          <div class="deploy-row suspect">
+            <div class="deploy-top">
+              <div class="deploy-svc">checkout-service <span style="color:var(--txt3)">v1.8.3</span></div>
+              <div class="deploy-time">3h 42m ago · prod-us-east-1</div>
+            </div>
+            <div class="deploy-detail">
+              SHA: <span class="sha">7e4a91f</span> · By: <span class="who">@sarah.kim</span>
+            </div>
+            <div class="deploy-msg">"fix: payment retry logic — reduce timeout to 2s"</div>
+            <div style="margin-top:5px;">
+              <span class="deploy-tag suspect">⚠ SUSPECT</span>
+            </div>
+          </div>
+
+          <div class="deploy-row">
+            <div class="deploy-top">
+              <div class="deploy-svc">api-gateway <span style="color:var(--txt3)">v3.1.0</span></div>
+              <div class="deploy-time">1d 3h ago · prod-us-east-1</div>
+            </div>
+            <div class="deploy-detail">
+              SHA: <span class="sha">c91d44a</span> · By: <span class="who">@priya.v</span>
+            </div>
+            <div class="deploy-msg">"feat: rate limiting v2 config"</div>
+            <div style="margin-top:5px;"><span class="deploy-tag ok">✓ OK</span></div>
+          </div>
+
+          <div style="margin-top:4px;padding:5px 8px;background:rgba(255,34,51,0.06);border:1px solid var(--crit-border);border-radius:2px;font-size:9.5px;color:var(--txt3);">
+            💬 <span style="color:var(--info)">@james.chen</span> <span style="color:var(--txt3)">(2h 11m ago):</span> <span style="color:var(--txt2)">"Just doing a quick schema migration for the new payment flow. Should be fine, only affects 3 tables. I know there's a freeze but this is urgent."</span>
+          </div>
+
+          <div style="margin-top:4px;padding:5px 8px;background:rgba(255,34,51,0.1);border:1px solid var(--crit-border);border-radius:2px;font-size:9.5px;color:var(--txt3);">
+            💬 <span style="color:var(--crit)">@james.chen</span> <span style="color:var(--txt3)">(1h 58m ago):</span> <span style="color:var(--crit)">"Uh, something broke. Rolling back now. The migration dropped a column that checkout-service needs. Working on a fix."</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AWS Region Health -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title"><div class="dot dot-crit"></div>AWS Region Health</div>
+        <div class="panel-meta">CloudWatch · Multi-Region</div>
+      </div>
+      <div class="panel-body">
+        <div class="region-list">
+
+          <div class="region-row crit">
+            <div class="region-name">us-east-1</div>
+            <div>
+              <div class="region-bar-track"><div class="region-bar-fill crit" style="width:73%"></div></div>
+            </div>
+            <div class="region-pct crit">73.1%</div>
+            <div class="region-stat" style="color:var(--crit)">P1 ACTIVE</div>
+          </div>
+
+          <div class="region-row deg">
+            <div class="region-name">us-west-2</div>
+            <div>
+              <div class="region-bar-track"><div class="region-bar-fill deg" style="width:61%"></div></div>
+            </div>
+            <div class="region-pct" style="color:var(--deg)">61.4%</div>
+            <div class="region-stat" style="color:var(--deg)">DEGRADED</div>
+          </div>
+
+          <div class="region-row warn">
+            <div class="region-name">eu-west-1</div>
+            <div>
+              <div class="region-bar-track"><div class="region-bar-fill warn" style="width:82%"></div></div>
+            </div>
+            <div class="region-pct warn">82.3%</div>
+            <div class="region-stat" style="color:var(--warn)">WARNING</div>
+          </div>
+
+          <div class="region-row" style="background:var(--ok-bg);border-color:var(--ok-border);">
+            <div class="region-name">ap-southeast-1</div>
+            <div>
+              <div class="region-bar-track"><div class="region-bar-fill ok" style="width:99%"></div></div>
+            </div>
+            <div class="region-pct ok">99.8%</div>
+            <div class="region-stat" style="color:var(--ok)">HEALTHY</div>
+          </div>
+
+          <div class="region-row warn">
+            <div class="region-name">eu-central-1</div>
+            <div>
+              <div class="region-bar-track"><div class="region-bar-fill warn" style="width:88%"></div></div>
+            </div>
+            <div class="region-pct warn">88.1%</div>
+            <div class="region-stat" style="color:var(--warn)">ELEVATED ERR</div>
+          </div>
+
+        </div>
+
+        <div style="padding:8px 10px;border-top:1px solid var(--border);">
+          <div style="font-size:10px;color:var(--txt3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Network AZ Packet Loss</div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;">
+              <span style="color:var(--txt2)">AZ-A → AZ-B</span>
+              <span style="color:var(--crit);font-weight:700;" id="pl-ab">12.4%</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;">
+              <span style="color:var(--txt2)">AZ-A → AZ-C</span>
+              <span style="color:var(--warn);font-weight:700;" id="pl-ac">4.1%</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;">
+              <span style="color:var(--txt2)">AZ-B → AZ-C</span>
+              <span style="color:var(--crit);font-weight:700;" id="pl-bc">8.7%</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;">
+              <span style="color:var(--txt2)">RTT AZ-A → AZ-B</span>
+              <span style="color:var(--warn);font-weight:700;" id="rtt-ab">42ms</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<!-- padding at bottom -->
+<div style="height:12px;"></div>
+
+<script>
+// ====================================================================
+// STATE
+// ====================================================================
+const NPOINTS = 80;
+
+const state = {
+  sla: 827,
+  mttr: 8047,
+  cpu: { val: 96.8, data: [] },
+  mem: { val: 94.2, data: [] },
+  err: { val: 44.1, data: [] },
+  lat: { val: 8200, data: [] },
+  pool: { active: 98, queue: 847, wait: 23.4, deadlocks: 142 },
+  rep: { lag1a: 127.3, lag1b: 134.7, lag1c: 141.2 },
+  incDurations: [2821, 3143, 3783, 4271, 5308, 8047, 11227, 13500, 16200],
+  oncall: { l1: 2843, l2: 2111, l3: 1367, vp: 192, cto: 468 },
+  alertCount: 34,
+  blastRevenue: 47280,
+  blastTpm: 8412,
+  blastErrors: 2300000,
+  pl: { ab: 12.4, ac: 4.1, bc: 8.7, rtt: 42 },
+  logTs: Date.now(),
+};
+
+// ====================================================================
+// GENERATE HISTORICAL GRAPH DATA
+// ====================================================================
+function generateGraphData(n, opts) {
+  const data = [];
+  for (let i = 0; i < n; i++) {
+    const progress = i / (n - 1);
+    let val;
+    if (opts.type === 'spike') {
+      const spikeStart = opts.spikeAt || 0.6;
+      if (progress < spikeStart) {
+        val = opts.base + (Math.random() - 0.5) * opts.noise * 0.4;
+      } else {
+        const spikeProgress = (progress - spikeStart) / (1 - spikeStart);
+        val = opts.base + (opts.peak - opts.base) * Math.pow(spikeProgress, 0.7);
+        val += (Math.random() - 0.5) * opts.noise;
+      }
+    } else {
+      val = opts.base + (opts.peak - opts.base) * Math.pow(progress, 0.8);
+      val += (Math.random() - 0.5) * opts.noise;
+    }
+    data.push(Math.max(opts.min || 0, Math.min(opts.max || 100, val)));
+  }
+  return data;
+}
+
+state.cpu.data = generateGraphData(NPOINTS, { type: 'spike', base: 22, peak: 98.7, noise: 5, spikeAt: 0.55, max: 100 });
+state.mem.data = generateGraphData(NPOINTS, { type: 'spike', base: 55, peak: 94.7, noise: 2, spikeAt: 0.60, max: 100 });
+state.err.data = generateGraphData(NPOINTS, { type: 'spike', base: 0.2, peak: 47.3, noise: 4, spikeAt: 0.58, max: 100 });
+state.lat.data = generateGraphData(NPOINTS, { type: 'spike', base: 82, peak: 8843, noise: 400, spikeAt: 0.56, max: 15000 });
+
+// ====================================================================
+// CANVAS GRAPH DRAWING
+// ====================================================================
+function drawGraph(canvasId, data, opts) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const parent = canvas.parentElement;
+  const w = parent.clientWidth;
+  const h = Math.max(parent.clientHeight - 32, 60);
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Background
+  ctx.fillStyle = '#0d0d18';
+  ctx.fillRect(0, 0, w, h);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 4; i++) {
+    const y = (h / 4) * i;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+  for (let i = 0; i <= 8; i++) {
+    const x = (w / 8) * i;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+
+  // Y-axis labels
+  ctx.fillStyle = 'rgba(100,110,140,0.6)';
+  ctx.font = '9px Consolas, monospace';
+  for (let i = 0; i <= 4; i++) {
+    const y = (h / 4) * i;
+    const val = opts.max - (opts.max / 4) * i;
+    ctx.fillText(opts.formatVal ? opts.formatVal(val) : Math.round(val) + (opts.unit || '%'), 2, y + 9);
+  }
+
+  if (data.length < 2) return;
+
+  const xStep = w / (data.length - 1);
+  const yScale = h / opts.max;
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, opts.fillTop || 'rgba(255,34,51,0.35)');
+  grad.addColorStop(1, opts.fillBot || 'rgba(255,34,51,0.02)');
+
+  ctx.beginPath();
+  ctx.moveTo(0, h - data[0] * yScale);
+  for (let i = 1; i < data.length; i++) {
+    const x = i * xStep;
+    const y = h - data[i] * yScale;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo((data.length - 1) * xStep, h);
+  ctx.lineTo(0, h);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.moveTo(0, h - data[0] * yScale);
+  for (let i = 1; i < data.length; i++) {
+    const x = i * xStep;
+    const y = h - data[i] * yScale;
+    ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = opts.lineColor || '#ff2233';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Current value dot
+  const lastX = (data.length - 1) * xStep;
+  const lastY = h - data[data.length - 1] * yScale;
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, 3, 0, Math.PI * 2);
+  ctx.fillStyle = opts.lineColor || '#ff2233';
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Threshold line
+  if (opts.threshold) {
+    const ty = h - opts.threshold * yScale;
+    ctx.beginPath();
+    ctx.moveTo(0, ty);
+    ctx.lineTo(w, ty);
+    ctx.strokeStyle = 'rgba(245,158,11,0.4)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(245,158,11,0.7)';
+    ctx.fillText('SLA', w - 24, ty - 2);
+  }
+
+  // "NOW" marker at right edge
+  ctx.fillStyle = 'rgba(100,110,140,0.5)';
+  ctx.fillText('NOW', w - 26, h - 2);
+  ctx.fillText('-80m', 2, h - 2);
+}
+
+function redrawAllGraphs() {
+  drawGraph('canvas-cpu', state.cpu.data, { max: 100, unit: '%', lineColor: '#ff2233', fillTop: 'rgba(255,34,51,0.3)', fillBot: 'rgba(255,34,51,0.02)', threshold: 80 });
+  drawGraph('canvas-mem', state.mem.data, { max: 100, unit: '%', lineColor: '#f97316', fillTop: 'rgba(249,115,22,0.25)', fillBot: 'rgba(249,115,22,0.02)', threshold: 90 });
+  drawGraph('canvas-err', state.err.data, { max: 100, unit: '%', lineColor: '#ff2233', fillTop: 'rgba(255,34,51,0.3)', fillBot: 'rgba(255,34,51,0.02)', threshold: 5 });
+  drawGraph('canvas-lat', state.lat.data, { max: 15000, unit: 'ms', lineColor: '#f59e0b', fillTop: 'rgba(245,158,11,0.25)', fillBot: 'rgba(245,158,11,0.02)', threshold: 500, formatVal: v => (v >= 1000 ? (v/1000).toFixed(1)+'s' : Math.round(v)+'ms') });
+}
+
+// ====================================================================
+// METRIC FLUCTUATION
+// ====================================================================
+function fluctuate(val, min, max, volatility) {
+  const delta = (Math.random() - 0.48) * volatility;
+  return Math.max(min, Math.min(max, val + delta));
+}
+
+function pushData(arr, val, max) {
+  arr.push(val);
+  if (arr.length > max) arr.shift();
+}
+
+function updateMetrics() {
+  // CPU
+  state.cpu.val = fluctuate(state.cpu.val, 91, 100, 2.5);
+  pushData(state.cpu.data, state.cpu.val, NPOINTS);
+  el('cpu-val').textContent = state.cpu.val.toFixed(1) + '%';
+  const cpuDelta = (state.cpu.val - (state.cpu.data[state.cpu.data.length - 2] || state.cpu.val)).toFixed(1);
+  el('cpu-delta').textContent = (cpuDelta >= 0 ? '↑ +' : '↓ ') + Math.abs(cpuDelta) + '% vs last';
+
+  // Memory
+  state.mem.val = fluctuate(state.mem.val, 90, 99.8, 0.8);
+  pushData(state.mem.data, state.mem.val, NPOINTS);
+  el('mem-val').textContent = state.mem.val.toFixed(1) + '%';
+
+  // Error rate
+  state.err.val = fluctuate(state.err.val, 35, 62, 3.5);
+  pushData(state.err.data, state.err.val, NPOINTS);
+  el('err-val').textContent = state.err.val.toFixed(1) + '%';
+  el('err-503').textContent = (state.err.val * 0.81).toFixed(1) + '%';
+  el('err-504').textContent = (state.err.val * 0.18).toFixed(1) + '%';
+
+  // Latency
+  state.lat.val = fluctuate(state.lat.val, 4500, 14000, 600);
+  pushData(state.lat.data, state.lat.val, NPOINTS);
+  el('lat-val').textContent = Math.round(state.lat.val).toLocaleString() + 'ms';
+  el('lat-max').textContent = Math.round(state.lat.val * 2.8 + Math.random() * 3000).toLocaleString() + 'ms';
+  el('lat-p50').textContent = Math.round(state.lat.val * 0.48).toLocaleString() + 'ms';
+
+  // DB pool
+  state.pool.active = Math.min(100, Math.floor(fluctuate(state.pool.active, 94, 100, 1.2)));
+  state.pool.queue = Math.max(700, Math.floor(fluctuate(state.pool.queue, 700, 1100, 25)));
+  state.pool.wait = fluctuate(state.pool.wait, 18, 45, 2);
+  state.pool.deadlocks = Math.max(100, Math.floor(fluctuate(state.pool.deadlocks, 100, 200, 12)));
+  el('pool-active').textContent = state.pool.active;
+  el('pool-pct').textContent = state.pool.active + ' / 100';
+  el('pool-bar').style.width = state.pool.active + '%';
+  el('queue-num').textContent = state.pool.queue.toLocaleString();
+  el('wait-time').textContent = state.pool.wait.toFixed(1) + 's';
+  el('deadlocks').textContent = state.pool.deadlocks;
+
+  // Replication lag
+  state.rep.lag1a = fluctuate(state.rep.lag1a, 110, 180, 3);
+  state.rep.lag1b = fluctuate(state.rep.lag1b, 118, 190, 3);
+  state.rep.lag1c = fluctuate(state.rep.lag1c, 122, 200, 3);
+  el('rep1a-lag').textContent = state.rep.lag1a.toFixed(1) + 's';
+  el('rep1b-lag').textContent = state.rep.lag1b.toFixed(1) + 's';
+  el('rep1c-lag').textContent = state.rep.lag1c.toFixed(1) + 's';
+  el('rep1a-bar').style.width = Math.min(98, state.rep.lag1a / 2) + '%';
+  el('rep1b-bar').style.width = Math.min(98, state.rep.lag1b / 2) + '%';
+  el('rep1c-bar').style.width = Math.min(98, state.rep.lag1c / 2) + '%';
+
+  // Packet loss
+  state.pl.ab = fluctuate(state.pl.ab, 8, 18, 0.8);
+  state.pl.ac = fluctuate(state.pl.ac, 2, 7, 0.4);
+  state.pl.bc = fluctuate(state.pl.bc, 5, 14, 0.6);
+  state.pl.rtt = fluctuate(state.pl.rtt, 28, 68, 4);
+  el('pl-ab').textContent = state.pl.ab.toFixed(1) + '%';
+  el('pl-ac').textContent = state.pl.ac.toFixed(1) + '%';
+  el('pl-bc').textContent = state.pl.bc.toFixed(1) + '%';
+  el('rtt-ab').textContent = Math.round(state.pl.rtt) + 'ms';
+
+  // Service metrics
+  el('svc-payment-err').textContent = state.err.val.toFixed(1) + '% err';
+  el('svc-checkout-err').textContent = (state.err.val * 1.27).toFixed(1) + '% err';
+  el('svc-user-lat').textContent = 'p99: ' + Math.round(state.lat.val * 0.22).toLocaleString() + 'ms';
+
+  // Blast radius
+  state.blastRevenue = Math.floor(fluctuate(state.blastRevenue, 40000, 58000, 800));
+  state.blastTpm = Math.floor(fluctuate(state.blastTpm, 7000, 10000, 150));
+  state.blastErrors += Math.floor(Math.random() * 18000 + 5000);
+  el('br-revenue').textContent = '$' + state.blastRevenue.toLocaleString() + '/min';
+  el('br-tpm').textContent = state.blastTpm.toLocaleString();
+  el('br-errors').textContent = (state.blastErrors / 1000000).toFixed(1) + 'M';
+  el('br-uptime').textContent = (73.1 - (state.rep.lag1a - 127) * 0.01).toFixed(2) + '%';
+
+  redrawAllGraphs();
+}
+
+// ====================================================================
+// TIMERS
+// ====================================================================
+function padTwo(n) { return String(Math.floor(n)).padStart(2, '0'); }
+
+function formatDuration(secs) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  if (h > 0) return h + 'h ' + padTwo(m) + ':' + padTwo(s);
+  return padTwo(m) + ':' + padTwo(s);
+}
+
+function updateTimers() {
+  // Clock
+  const now = new Date();
+  el('live-clock').textContent =
+    padTwo(now.getHours()) + ':' + padTwo(now.getMinutes()) + ':' + padTwo(now.getSeconds());
+  el('live-date').textContent =
+    now.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) +
+    ' UTC' + (now.getTimezoneOffset() < 0 ? '+' : '-') + padTwo(Math.abs(now.getTimezoneOffset()) / 60);
+
+  // SLA breach countdown
+  state.sla = Math.max(0, state.sla - 1);
+  const slaEl = el('sla-timer');
+  slaEl.textContent = padTwo(Math.floor(state.sla / 60)) + ':' + padTwo(state.sla % 60);
+  if (state.sla < 300) slaEl.style.color = '#ff0000';
+
+  // MTTR
+  state.mttr++;
+  el('mttr').textContent = formatDuration(state.mttr);
+
+  // Incident durations
+  const rows = document.querySelectorAll('#incidents-tbody tr');
+  rows.forEach((row, i) => {
+    if (state.incDurations[i] !== undefined) {
+      state.incDurations[i]++;
+      const td = row.querySelector('.inc-dur');
+      if (td) td.textContent = formatDuration(state.incDurations[i]);
+    }
+  });
+
+  // On-call timers
+  state.oncall.l1++;
+  state.oncall.l2++;
+  state.oncall.l3++;
+  state.oncall.vp++;
+  state.oncall.cto = Math.max(0, state.oncall.cto - 1);
+  el('oc-l1-time').textContent = formatDuration(state.oncall.l1);
+  el('oc-l2-time').textContent = formatDuration(state.oncall.l2);
+  el('oc-l3-time').textContent = formatDuration(state.oncall.l3);
+  el('oc-vp-time').textContent = formatDuration(state.oncall.vp);
+  el('cto-page-timer').textContent = formatDuration(state.oncall.cto);
+}
+
+// ====================================================================
+// LOG STREAM
+// ====================================================================
+const LOG_TEMPLATES = [
+  { level: 'FATAL', svc: 'payment-service', msgs: [
+    'connection pool exhausted (pool_size=100, waiting={Q}), rejecting all new connections',
+    'FATAL: cannot acquire db connection after 30000ms timeout, circuit breaker OPEN',
+    'unhandled exception: java.sql.SQLException: Timeout waiting for connection from pool',
+  ]},
+  { level: 'ERROR', svc: 'api-gateway', msgs: [
+    'upstream payment-service returned 503 after {L}ms (attempt 3/3)',
+    'health check failed: GET /health -> 503 Service Unavailable [{L}ms]',
+    'rate limit exhausted for upstream: payment-svc (limit=10000/s, current=0)',
+    'circuit breaker OPEN for payment-service: 47.3% errors in last 60s',
+  ]},
+  { level: 'FATAL', svc: 'postgres-primary', msgs: [
+    'max_connections ({MAX}) reached, new connection refused for user app_user',
+    'WAL sender process terminated (SIGTERM): too many streaming replication connections',
+    'autovacuum daemon is sleeping: cannot acquire lock on payments.orders table',
+    'FATAL: pre-existing shared memory block is still in use — manual recovery required',
+  ]},
+  { level: 'ERROR', svc: 'k8s', msgs: [
+    'pod payment-svc-7d9f4b-xkp9m OOMKilled: container exceeded memory limit 4096Mi',
+    'pod checkout-svc-5c9a1e-bnz4x: Back-off restarting failed container (restarts: {R})',
+    'node k8s-node-04.prod.acme.internal: NotReady — kubelet stopped posting node status',
+    'deployment order-service: rollout failed — minimum availability not met (0/4 pods ready)',
+    'HPA payment-service: unable to scale, resource metrics not available from API server',
+    'eviction triggered on k8s-node-04: disk pressure (94.7% used)',
+  ]},
+  { level: 'ERROR', svc: 'checkout-service', msgs: [
+    'stripe payment intent creation failed: ECONNREFUSED 10.24.1.41:5432 (payment_db)',
+    'redis SET failed: READONLY You cannot write against a read only replica',
+    'transaction rollback failed: connection lost mid-transaction, data integrity unknown',
+    'idempotency key collision detected: order_{OID} may have been double-charged',
+  ]},
+  { level: 'WARN', svc: 'cdn-edge', msgs: [
+    'origin health check timeout: 10.0.4.22:443 did not respond in 5000ms',
+    'origin error rate 61.2% — switching to stale cache (TTL override active)',
+    'CloudFront distribution E1K9F2P8A7Z: 503 errors from all origin instances',
+  ]},
+  { level: 'ERROR', svc: 'auth-service', msgs: [
+    'JWT verification failed: redis GET timeout after 4000ms (is redis alive?)',
+    'session store unavailable: falling back to stateless mode (WARNING: no revocation)',
+    'token refresh flood detected: 84,000 refresh attempts in last 60s',
+  ]},
+  { level: 'WARN', svc: 'k8s-node-04', msgs: [
+    'disk pressure condition: /var/lib/containerd at 94.7%, eviction threshold 90%',
+    'memory pressure: available=182Mi, threshold=200Mi — evicting BestEffort pods',
+    'kubelet: PLEG is not healthy: pleg was last seen active 3m42s ago; threshold is 3m0s',
+  ]},
+  { level: 'FATAL', svc: 'order-service', msgs: [
+    'schema migration a3f82bc failed: column "payment_method_v4" does not exist',
+    'database rollback error: relation "orders_v2" still referenced by "checkout_items"',
+    'startup failed: required env var STRIPE_V4_ENDPOINT not set (deployment misconfigured)',
+  ]},
+  { level: 'ERROR', svc: 'notification-svc', msgs: [
+    'SQS queue depth: 847,291 messages (normal: <1000) — consumer backpressure',
+    'email send failed: SES throttling (SendingRate 14/s, quota 10/s)',
+    'worker pool exhausted: all 256 goroutines blocked on db write',
+  ]},
+  { level: 'INFO', svc: 'pagerduty-webhook', msgs: [
+    'incident INC-4822 triggered: api-gateway error rate {E}%',
+    'escalation policy triggered: L2 oncall notified for INC-4821',
+    'incident INC-4820 age exceeded P1 SLA threshold (45 minutes)',
+  ]},
+  { level: 'ERROR', svc: 'lb-prod-01', msgs: [
+    'health check failed: /health on 10.0.2.{IP}:8080 -> connection refused',
+    'backend pool degraded: 3/8 instances healthy (threshold: 5) — LB overloaded',
+    'sticky session state lost: Redis session store unreachable',
+  ]},
+];
+
+function randomFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function formatLogMsg(template) {
+  return template
+    .replace('{Q}', state.pool.queue)
+    .replace('{L}', Math.round(state.lat.val * (0.8 + Math.random() * 0.4)))
+    .replace('{MAX}', 100)
+    .replace('{R}', Math.floor(20 + Math.random() * 50))
+    .replace('{OID}', Math.floor(100000000 + Math.random() * 900000000))
+    .replace('{E}', state.err.val.toFixed(1))
+    .replace('{IP}', Math.floor(10 + Math.random() * 240));
+}
+
+function getLogTimestamp() {
+  state.logTs += Math.floor(Math.random() * 800 + 100);
+  const d = new Date(state.logTs);
+  return padTwo(d.getHours()) + ':' + padTwo(d.getMinutes()) + ':' + padTwo(d.getSeconds()) + '.' +
+    String(d.getMilliseconds()).padStart(3, '0');
+}
+
+const levelClassMap = { FATAL: 'log-level-fatal', ERROR: 'log-level-error', WARN: 'log-level-warn', INFO: 'log-level-info', DEBUG: 'log-level-debug' };
+const msgClassMap = { FATAL: 'log-msg-fatal', ERROR: 'log-msg-error', WARN: 'log-msg-warn', INFO: 'log-msg-info', DEBUG: 'log-msg-info' };
+
+// Weighted log level selection (more fatals and errors during incident)
+function pickLogLevel() {
+  const r = Math.random();
+  if (r < 0.25) return 'FATAL';
+  if (r < 0.70) return 'ERROR';
+  if (r < 0.88) return 'WARN';
+  return 'INFO';
+}
+
+function addLogLine() {
+  const targetLevel = pickLogLevel();
+  const matching = LOG_TEMPLATES.filter(t => t.level === targetLevel);
+  const template = matching.length > 0 ? randomFrom(matching) : randomFrom(LOG_TEMPLATES);
+  const msg = randomFrom(template.msgs);
+  const ts = getLogTimestamp();
+  const level = template.level;
+
+  const line = document.createElement('div');
+  line.className = 'log-line';
+
+  line.innerHTML =
+    '<span class="log-ts">' + ts + '</span>' +
+    '<span class="' + levelClassMap[level] + '">[' + level + ']</span> ' +
+    '<span class="log-svc">' + template.svc + '</span>' +
+    '<span class="' + msgClassMap[level] + '">' + formatLogMsg(msg) + '</span>';
+
+  const container = el('log-stream');
+  container.insertBefore(line, container.firstChild);
+  if (container.children.length > 80) {
+    container.removeChild(container.lastChild);
+  }
+}
+
+function initLogStream() {
+  // Seed with 40 initial log lines (in reverse chronological order)
+  for (let i = 0; i < 40; i++) {
+    addLogLine();
+  }
+}
+
+// ====================================================================
+// ALERT FEED
+// ====================================================================
+const ALERT_TEMPLATES = [
+  { sev: 'c', svc: 'payment-service', msgs: ['HTTP 503 rate {E}% — exceeds 5% SLA threshold', 'Circuit breaker OPEN — 0 healthy instances', 'Stripe webhook delivery failing — 0% success rate'], dur: () => Math.floor(Math.random()*3600+60) },
+  { sev: 'c', svc: 'postgres-primary', msgs: ['Connection pool exhausted: {A}/100 active, {Q} queued', 'CPU {CPU}% — I/O wait 67.3%', 'Replication slot overflow imminent — 4821 WAL files pending'], dur: () => Math.floor(Math.random()*3600+300) },
+  { sev: 'c', svc: 'k8s-cluster', msgs: ['Node k8s-node-04 NotReady — 47m', 'Pod crash loop storm: 18 pods CrashLoopBackOff in payments ns', 'PodEviction storm on k8s-node-04: memory pressure'], dur: () => Math.floor(Math.random()*2800+200) },
+  { sev: 'c', svc: 'cdn-edge-us-east', msgs: ['Origin error rate 61% — CDN serving stale cache', 'All origin health checks failing — /health 503', 'CloudFront 5xx error rate: 47.3%'], dur: () => Math.floor(Math.random()*4000+600) },
+  { sev: 'w', svc: 'auth-service', msgs: ['P99 latency {LAT}ms — SLA: 200ms', 'Token refresh flood: 84K requests/min', 'Redis read-only replica — session writes failing'], dur: () => Math.floor(Math.random()*2400+120) },
+  { sev: 'c', svc: 'order-service', msgs: ['All pods CrashLoopBackOff — deployment failed', 'Schema migration rollback blocked: dependent table "checkout_items"', 'Error rate {E}% — 0 healthy pods'], dur: () => Math.floor(Math.random()*3200+400) },
+  { sev: 'c', svc: 'lb-prod-01', msgs: ['Health check failure: 5/8 backends DOWN', 'Connection queue: {Q} requests waiting', '504 Gateway Timeout rate: 38.4%'], dur: () => Math.floor(Math.random()*4500+900) },
+  { sev: 'w', svc: 'network', msgs: ['AZ-B packet loss: {PL}% (threshold: 0.1%)', 'AZ-A→AZ-B RTT: {RTT}ms (normal: 2ms)', 'Inter-AZ bandwidth saturation: 94.2%'], dur: () => Math.floor(Math.random()*5000+1200) },
+  { sev: 'c', svc: 'checkout-service', msgs: ['OOMKill rate: 3 containers in last 5m', 'Double-charge risk: idempotency key store unreachable', 'Error rate {E}% — payment processing halted'], dur: () => Math.floor(Math.random()*2800+300) },
+  { sev: 'w', svc: 'redis-cluster', msgs: ['Cache hit rate 7.8% — 92.2% cache miss storm', 'Eviction rate: 47,200 keys/s', 'Replica lag: 14.7s — read scaling degraded'], dur: () => Math.floor(Math.random()*4200+600) },
+  { sev: 'c', svc: 'notification-svc', msgs: ['SQS queue depth 847K — consumer backlog critical', 'Dead letter queue: 12,841 failed messages', 'Worker pool exhausted — all 256 goroutines blocked'], dur: () => Math.floor(Math.random()*2000+200) },
+];
+
+function formatAlertMsg(tmpl) {
+  return tmpl
+    .replace('{E}', state.err.val.toFixed(1))
+    .replace('{A}', state.pool.active)
+    .replace('{Q}', state.pool.queue)
+    .replace('{CPU}', state.cpu.val.toFixed(1))
+    .replace('{LAT}', Math.round(state.lat.val * 0.48).toLocaleString())
+    .replace('{PL}', state.pl.ab.toFixed(1))
+    .replace('{RTT}', Math.round(state.pl.rtt));
+}
+
+function formatAlertAge(secs) {
+  if (secs < 60) return secs + 's';
+  if (secs < 3600) return Math.floor(secs / 60) + 'm ' + (secs % 60) + 's';
+  return Math.floor(secs / 3600) + 'h ' + Math.floor((secs % 3600) / 60) + 'm';
+}
+
+function addAlert() {
+  const t = randomFrom(ALERT_TEMPLATES);
+  const msg = formatAlertMsg(randomFrom(t.msgs));
+  const dur = t.dur();
+  const isUnacked = Math.random() > 0.2;
+
+  const item = document.createElement('div');
+  item.className = 'alert-item';
+
+  const stripeClass = 'alert-stripe ' + t.sev;
+  const ackText = isUnacked ? '⚠ UNANSWERED' : '✓ ACKED';
+  const ackClass = isUnacked ? 'alert-ack unack' : 'alert-ack acked';
+
+  item.innerHTML =
+    '<div class="' + stripeClass + '"></div>' +
+    '<div class="alert-content">' +
+    '<div class="alert-top">' +
+    '<span class="alert-svc">' + (t.sev === 'c' ? '<span class="badge badge-crit">CRIT</span> ' : '<span class="badge badge-warn">WARN</span> ') + t.svc + '</span>' +
+    '<span class="alert-time">' + new Date().toLocaleTimeString() + '</span>' +
+    '</div>' +
+    '<div class="alert-msg">' + msg + '</div>' +
+    '<div class="alert-footer">' +
+    '<span class="' + ackClass + '">' + ackText + '</span>' +
+    '<span class="alert-dur">' + formatAlertAge(dur) + '</span>' +
+    '</div>' +
+    '</div>';
+
+  const feed = el('alert-feed');
+  feed.insertBefore(item, feed.firstChild);
+  if (feed.children.length > 60) feed.removeChild(feed.lastChild);
+
+  // Update unacked count
+  state.alertCount = Math.max(state.alertCount, state.alertCount + (isUnacked ? 1 : 0));
+  el('alert-count').textContent = Math.floor(state.alertCount + Math.random() * 2) + ' UNACKED';
+}
+
+function initAlertFeed() {
+  // Seed with initial alerts
+  for (let i = 0; i < 18; i++) {
+    addAlert();
+  }
+}
+
+// ====================================================================
+// HELPERS
+// ====================================================================
+function el(id) { return document.getElementById(id); }
+
+// ====================================================================
+// INIT
+// ====================================================================
+function init() {
+  redrawAllGraphs();
+  initLogStream();
+  initAlertFeed();
+
+  // Start intervals
+  setInterval(updateTimers, 1000);
+  setInterval(updateMetrics, 1200);
+  setInterval(addLogLine, 750);
+  setInterval(addAlert, 3500);
+
+  // Run immediate first tick
+  updateTimers();
+  updateMetrics();
+
+  // Handle resize
+  window.addEventListener('resize', redrawAllGraphs);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
